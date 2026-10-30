@@ -72,11 +72,7 @@ export async function getEntry(habitId: string, date: LocalDate): Promise<Entry 
 }
 
 /** Insert or replace the single entry for (habit, day). */
-export async function upsertEntry(
-  habitId: string,
-  date: LocalDate,
-  patch: Partial<Omit<Entry, 'id' | 'habitId' | 'date'>>,
-): Promise<Entry> {
+export async function upsertEntry(habitId: string, date: LocalDate, patch: Partial<Omit<Entry, 'id' | 'habitId' | 'date'>>): Promise<Entry> {
   const existing = await getEntry(habitId, date);
   if (existing) {
     const next = { ...existing, ...patch, updatedAt: nowIso() };

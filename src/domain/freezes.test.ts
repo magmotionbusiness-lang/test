@@ -3,7 +3,11 @@ import { canFreeze, freezesLeft } from './freezes';
 
 describe('streak freezes', () => {
   it('allows two per calendar month across habits', () => {
-    const entries = [{ date: '2026-10-03', freeze: true }, { date: '2026-10-20', freeze: true }, { date: '2026-09-30', freeze: true }];
+    const entries = [
+      { date: '2026-10-03', freeze: true },
+      { date: '2026-10-20', freeze: true },
+      { date: '2026-09-30', freeze: true },
+    ];
     expect(freezesLeft(entries, '2026-10-29')).toBe(0);
     expect(freezesLeft(entries, '2026-09-15')).toBe(1);
     expect(freezesLeft(entries, '2026-11-01')).toBe(2);

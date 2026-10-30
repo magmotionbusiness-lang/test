@@ -5,7 +5,17 @@ import { formatDay, shiftDate } from '@/domain/dates';
 const DAYS = 21;
 
 /** Horizontal strip of recent days for retroactive logging; ends at today. */
-export function DateStrip({ value, today, onChange, completion }: { value: LocalDate; today: LocalDate; onChange: (d: LocalDate) => void; completion: Map<LocalDate, number> }) {
+export function DateStrip({
+  value,
+  today,
+  onChange,
+  completion,
+}: {
+  value: LocalDate;
+  today: LocalDate;
+  onChange: (d: LocalDate) => void;
+  completion: Map<LocalDate, number>;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const days = Array.from({ length: DAYS }, (_, i) => shiftDate(today, i - DAYS + 1));
 

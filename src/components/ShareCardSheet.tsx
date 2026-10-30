@@ -129,8 +129,30 @@ async function renderCard(subject: ShareSubject, weekStart: 0 | 1): Promise<Blob
   } else {
     const { habits, entries } = subject;
     tiles = dailyShare(habits, entries, start, today, weekStart);
-    const best = Math.max(0, ...habits.map((h) => computeStreak(h, entries.filter((e) => e.habitId === h.id), today, weekStart).current));
-    const scores = habits.map((h) => consistencyWindow(h, entries.filter((e) => e.habitId === h.id), today, weekStart, 30).score).filter((x): x is number => x !== null);
+    const best = Math.max(
+      0,
+      ...habits.map(
+        (h) =>
+          computeStreak(
+            h,
+            entries.filter((e) => e.habitId === h.id),
+            today,
+            weekStart,
+          ).current,
+      ),
+    );
+    const scores = habits
+      .map(
+        (h) =>
+          consistencyWindow(
+            h,
+            entries.filter((e) => e.habitId === h.id),
+            today,
+            weekStart,
+            30,
+          ).score,
+      )
+      .filter((x): x is number => x !== null);
     stats = [
       { label: 'habits', value: String(habits.length) },
       { label: 'best active streak', value: String(best) },
@@ -148,7 +170,16 @@ async function renderCard(subject: ShareSubject, weekStart: 0 | 1): Promise<Blob
     const t = tiles.get(d) ?? { state: 'unscheduled' as const, progress: 0 };
     const x = gx + Math.floor(i / 7) * (size + gap);
     const y = gy + (i % 7) * (size + gap);
-    const filled = subject.kind === 'section' ? t.progress : t.state === 'done' ? 1 : t.state === 'minimum' ? 0.5 : t.state === 'partial' ? Math.max(0.25, t.progress * 0.85) : 0;
+    const filled =
+      subject.kind === 'section'
+        ? t.progress
+        : t.state === 'done'
+          ? 1
+          : t.state === 'minimum'
+            ? 0.5
+            : t.state === 'partial'
+              ? Math.max(0.25, t.progress * 0.85)
+              : 0;
     ctx.fillStyle = filled > 0 ? color : t.state === 'missed' ? 'rgba(120,120,128,0.10)' : 'rgba(120,120,128,0.16)';
     ctx.globalAlpha = filled > 0 ? (subject.kind === 'section' ? [0.3, 0.5, 0.75, 1][Math.min(3, Math.ceil(filled * 4) - 1)]! : filled) : 1;
     roundRect(ctx, x, y, size, size, size * 0.25);

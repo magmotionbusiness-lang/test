@@ -36,7 +36,10 @@ export function ToastHost() {
   );
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+66px)] z-[45] flex justify-center px-4" aria-live="polite">
+    <div
+      className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+66px)] z-[45] flex justify-center px-4"
+      aria-live="polite"
+    >
       <AnimatePresence>
         {t && (
           <motion.div

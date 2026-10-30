@@ -41,7 +41,12 @@ export function DaySheet({ habit, date, entry, today, freezesLeft, isGym, exerci
     // Reset only when a different day opens, so live updates don't clobber typing.
   }, [date]);
 
-  if (!date) return <Sheet open={false} onClose={onClose}>{null}</Sheet>;
+  if (!date)
+    return (
+      <Sheet open={false} onClose={onClose}>
+        {null}
+      </Sheet>
+    );
 
   const status = entry?.freeze ? 'Covered by a streak freeze' : entry ? STATUS_TEXT[entry.status] : date > today ? 'Upcoming' : 'Not done';
   const quantity = isQuantity(habit.type);
@@ -54,7 +59,11 @@ export function DaySheet({ habit, date, entry, today, freezesLeft, isGym, exerci
     }
     if (note.trim() !== (entry?.note ?? '')) await saveNote(habit, date, note.trim());
     if (isGym && JSON.stringify(workout) !== JSON.stringify(entry?.workout ?? [])) {
-      await saveWorkout(habit, date, workout.filter((w) => w.name.trim()).map((w) => ({ ...w, name: w.name.trim() })));
+      await saveWorkout(
+        habit,
+        date,
+        workout.filter((w) => w.name.trim()).map((w) => ({ ...w, name: w.name.trim() })),
+      );
     }
     onClose();
   };
@@ -92,7 +101,13 @@ export function DaySheet({ habit, date, entry, today, freezesLeft, isGym, exerci
         <QuickButton onClick={act(() => completeHabit(habit, date))}>Mark done</QuickButton>
         <QuickButton onClick={act(() => minimumHabit(habit, date))}>Minimum version</QuickButton>
         <QuickButton onClick={act(() => skipHabit(habit, date))}>Skip (rest day)</QuickButton>
-        {entry ? <QuickButton onClick={act(() => clearHabit(habit, date))} danger>Clear day</QuickButton> : <span />}
+        {entry ? (
+          <QuickButton onClick={act(() => clearHabit(habit, date))} danger>
+            Clear day
+          </QuickButton>
+        ) : (
+          <span />
+        )}
         {canFreeze(entry, date, today) && (
           <button
             disabled={freezesLeft === 0}

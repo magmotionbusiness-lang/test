@@ -45,7 +45,8 @@ export function CheckControl({ habit, entry, onTap, onLongPress }: Props) {
   const label = (() => {
     const base = habit.name;
     if (skipped) return `${base}: skipped. Tap to log.`;
-    if (habit.type === 'count') return `${base}: ${entry?.value ?? 0} of ${habit.target}. Tap to add one${onLongPress ? ', hold to set a number' : ''}.`;
+    if (habit.type === 'count')
+      return `${base}: ${entry?.value ?? 0} of ${habit.target}. Tap to add one${onLongPress ? ', hold to set a number' : ''}.`;
     if (habit.type === 'duration' || habit.type === 'numeric') return `${base}: ${entry?.value ?? 0} of ${habit.target} ${habit.unit}.`;
     return `${base}: ${done ? 'done' : 'not done'}.`;
   })();
@@ -70,7 +71,16 @@ export function CheckControl({ habit, entry, onTap, onLongPress }: Props) {
       className="relative -mr-1.5 flex h-11 w-11 shrink-0 items-center justify-center"
     >
       <svg width={size} height={size} className="-rotate-90" aria-hidden>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeOpacity={skipped ? 0.25 : 0.35} strokeWidth={2.5} strokeDasharray={skipped ? '3 3' : undefined} />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke={color}
+          strokeOpacity={skipped ? 0.25 : 0.35}
+          strokeWidth={2.5}
+          strokeDasharray={skipped ? '3 3' : undefined}
+        />
         {!done && progress > 0 && (
           <motion.circle
             cx={size / 2}

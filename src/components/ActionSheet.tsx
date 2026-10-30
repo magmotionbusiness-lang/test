@@ -14,7 +14,13 @@ export function ActionSheet({ open, title, actions, onClose }: { open: boolean; 
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-[55]" role="dialog" aria-modal="true" aria-label={title ?? 'Actions'}>
-          <motion.div className="absolute inset-0 bg-black/40" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
+          <motion.div
+            className="absolute inset-0 bg-black/40"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
           <motion.div
             className="absolute inset-x-0 bottom-0 mx-auto max-w-sm px-2 pb-[calc(env(safe-area-inset-bottom)+8px)]"
             initial={{ y: '100%' }}

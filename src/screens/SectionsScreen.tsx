@@ -9,19 +9,31 @@ import { ReorderList } from '@/components/ReorderList';
 import { SectionForm } from '@/components/SectionForm';
 import { EmptyState, PrimaryButton } from '@/components/ui';
 import { colorVar } from '@/lib/colors';
+import { formatPercent } from '@/lib/format';
+import { useSettings } from '@/app/useSettings';
+import { TileGrid } from '@/components/TileGrid';
+import { dailyShare } from '@/domain/aggregate';
+import { weekOverWeek } from '@/domain/analytics';
+import { shiftDate, today as todayFn } from '@/domain/dates';
 
 export function SectionsScreen() {
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
+  const settings = useSettings();
+  const today = todayFn();
 
   const data = useLiveQuery(async () => {
-    const [sections, habits] = await Promise.all([
-      db.sections.orderBy('order').filter((s) => !s.archived).toArray(),
+    const [sections, habits, entries] = await Promise.all([
+      db.sections
+        .orderBy('order')
+        .filter((s) => !s.archived)
+        .toArray(),
       db.habits.filter((h) => !h.archived).toArray(),
+      db.entries.where('date').between(shiftDate(today, -90), today, true, true).toArray(),
     ]);
-    return { sections, habits };
-  }, []);
+    return { sections, habits, entries };
+  }, [today]);
 
   return (
     <Page
@@ -54,29 +66,55 @@ export function SectionsScreen() {
           className="grid gap-3"
           itemClassName="rounded-card bg-bg-2 shadow-card"
           render={(s) => {
-            const count = data.habits.filter((h) => h.sectionId === s.id).length;
+            const habits = data.habits.filter((h) => h.sectionId === s.id);
+            const count = habits.length;
+            const week = weekOverWeek(habits, data.entries, today, settings.weekStart).thisWeek;
             return (
-              <button
-                onClick={() => !editing && navigate(`/sections/${s.id}`)}
-                className="flex w-full items-center gap-3 p-4 text-left"
-                aria-label={`${s.name}, ${count} habits`}
-              >
-                <span
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] text-[24px]"
-                  style={{ background: `color-mix(in srgb, ${colorVar(s.color)} 18%, transparent)` }}
-                  aria-hidden
+              <div className="p-4">
+                <button
+                  onClick={() => !editing && navigate(`/sections/${s.id}`)}
+                  className="flex w-full items-center gap-3 text-left"
+                  aria-label={`${s.name}, ${count} habits`}
                 >
-                  {s.emoji}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-headline">{s.name}</span>
-                  <span className="block truncate text-footnote text-secondary">
-                    {count} {count === 1 ? 'habit' : 'habits'}
-                    {s.description ? ` · ${s.description}` : ''}
+                  <span
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] text-[24px]"
+                    style={{ background: `color-mix(in srgb, ${colorVar(s.color)} 18%, transparent)` }}
+                    aria-hidden
+                  >
+                    {s.emoji}
                   </span>
-                </span>
-                {!editing && <ChevronRight size={18} className="shrink-0 text-tertiary" aria-hidden />}
-              </button>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-headline">{s.name}</span>
+                    <span className="block truncate text-footnote text-secondary">
+                      {count} {count === 1 ? 'habit' : 'habits'}
+                      {s.description ? ` · ${s.description}` : ''}
+                    </span>
+                  </span>
+                  {week !== null && (
+                    <span className="shrink-0 text-right">
+                      <span className="tabular block text-headline" style={{ color: colorVar(s.color) }}>
+                        {formatPercent(week)}
+                      </span>
+                      <span className="block text-caption text-secondary">this week</span>
+                    </span>
+                  )}
+                  {!editing && <ChevronRight size={18} className="shrink-0 text-tertiary" aria-hidden />}
+                </button>
+                {!editing && habits.length > 0 && (
+                  <div className="mt-3">
+                    <TileGrid
+                      color={colorVar(s.color)}
+                      tiles={dailyShare(habits, data.entries, shiftDate(today, -83), today, settings.weekStart)}
+                      start={shiftDate(today, -83)}
+                      today={today}
+                      weekStart={settings.weekStart}
+                      size="compact"
+                      mode="intensity"
+                      label={`${s.name}, last 12 weeks`}
+                    />
+                  </div>
+                )}
+              </div>
             );
           }}
         />

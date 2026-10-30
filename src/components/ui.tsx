@@ -13,9 +13,7 @@ export function ListGroup({ header, footer, children }: { header?: ReactNode; fo
   return (
     <section className="mb-8">
       {header && <h2 className="mb-1.5 px-4 text-footnote uppercase text-secondary">{header}</h2>}
-      <div className="overflow-hidden rounded-row bg-bg-2 shadow-card [&>*+*]:border-t [&>*+*]:border-[rgb(var(--separator)/0.29)]">
-        {children}
-      </div>
+      <div className="overflow-hidden rounded-row bg-bg-2 shadow-card [&>*+*]:border-t [&>*+*]:border-[rgb(var(--separator)/0.29)]">{children}</div>
       {footer && <p className="mt-1.5 px-4 text-footnote text-secondary">{footer}</p>}
     </section>
   );

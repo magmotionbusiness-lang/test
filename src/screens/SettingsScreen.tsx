@@ -14,7 +14,8 @@ export function SettingsScreen() {
   const [busy, setBusy] = useState(false);
 
   const onLoadDemo = async () => {
-    if ((await hasAnyData()) && !window.confirm('Replace everything on this device with demo data? Your current habits and history will be erased.')) return;
+    if ((await hasAnyData()) && !window.confirm('Replace everything on this device with demo data? Your current habits and history will be erased.'))
+      return;
     setBusy(true);
     try {
       await loadDemoData();

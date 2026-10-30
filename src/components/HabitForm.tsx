@@ -12,7 +12,20 @@ import { toast } from './Toast';
 
 type Draft = Pick<
   Habit,
-  'name' | 'emoji' | 'color' | 'type' | 'target' | 'unit' | 'schedule' | 'timeOfDay' | 'minimumVersion' | 'cue' | 'why' | 'sectionId' | 'startDate' | 'reminderTime'
+  | 'name'
+  | 'emoji'
+  | 'color'
+  | 'type'
+  | 'target'
+  | 'unit'
+  | 'schedule'
+  | 'timeOfDay'
+  | 'minimumVersion'
+  | 'cue'
+  | 'why'
+  | 'sectionId'
+  | 'startDate'
+  | 'reminderTime'
 >;
 
 const TYPE_OPTIONS: { value: HabitType; label: string }[] = [
@@ -66,7 +79,15 @@ interface Props {
 
 export function HabitForm({ open, onClose, habit, sectionId }: Props) {
   const settings = useSettings();
-  const sections = useLiveQuery(() => db.sections.orderBy('order').filter((s) => !s.archived).toArray(), []) ?? [];
+  const sections =
+    useLiveQuery(
+      () =>
+        db.sections
+          .orderBy('order')
+          .filter((s) => !s.archived)
+          .toArray(),
+      [],
+    ) ?? [];
   const [d, setD] = useState<Draft>(() => blankDraft(sectionId ?? '', 'blue'));
 
   useEffect(() => {
@@ -130,7 +151,12 @@ export function HabitForm({ open, onClose, habit, sectionId }: Props) {
 
       <FormGroup header="Section">
         {sections.length > 0 ? (
-          <SelectRow label="Section" value={d.sectionId} onChange={(v) => set('sectionId', v)} options={sections.map((s) => ({ value: s.id, label: `${s.emoji} ${s.name}` }))} />
+          <SelectRow
+            label="Section"
+            value={d.sectionId}
+            onChange={(v) => set('sectionId', v)}
+            options={sections.map((s) => ({ value: s.id, label: `${s.emoji} ${s.name}` }))}
+          />
         ) : (
           <p className="px-4 py-3 text-subhead text-secondary">Create a section first.</p>
         )}
@@ -147,7 +173,13 @@ export function HabitForm({ open, onClose, habit, sectionId }: Props) {
         {quantity && (
           <>
             <FieldRow label="Daily target">
-              <Stepper label="target" value={d.target} onChange={(v) => set('target', v)} step={d.target >= 100 ? 50 : d.target >= 20 ? 5 : 1} max={100000} />
+              <Stepper
+                label="target"
+                value={d.target}
+                onChange={(v) => set('target', v)}
+                step={d.target >= 100 ? 50 : d.target >= 20 ? 5 : 1}
+                max={100000}
+              />
             </FieldRow>
             <TextField label="Unit" value={d.unit} onChange={(v) => set('unit', v)} placeholder="Unit, e.g. pages" maxLength={16} />
           </>
@@ -169,7 +201,11 @@ export function HabitForm({ open, onClose, habit, sectionId }: Props) {
           />
         </div>
         {d.schedule.kind === 'weekdays' && (
-          <WeekdayPicker weekStart={settings.weekStart} value={d.schedule.days} onChange={(days: Weekday[]) => set('schedule', { kind: 'weekdays', days })} />
+          <WeekdayPicker
+            weekStart={settings.weekStart}
+            value={d.schedule.days}
+            onChange={(days: Weekday[]) => set('schedule', { kind: 'weekdays', days })}
+          />
         )}
         {(d.schedule.kind === 'timesPerWeek' || d.schedule.kind === 'timesPerMonth') && (
           <FieldRow label={d.schedule.kind === 'timesPerWeek' ? 'Times per week' : 'Times per month'}>
@@ -194,12 +230,23 @@ export function HabitForm({ open, onClose, habit, sectionId }: Props) {
         />
         <label className="flex min-h-[44px] items-center gap-3 px-4">
           <span className="flex-1 text-body">Start date</span>
-          <input type="date" value={d.startDate} max={today()} onChange={(e) => e.target.value && set('startDate', e.target.value)} className="bg-transparent text-body text-secondary outline-none" />
+          <input
+            type="date"
+            value={d.startDate}
+            max={today()}
+            onChange={(e) => e.target.value && set('startDate', e.target.value)}
+            className="bg-transparent text-body text-secondary outline-none"
+          />
         </label>
       </FormGroup>
 
       <FormGroup header="Make it stick" footer="A minimum version still counts on a bad day. A cue ties the habit to something you already do.">
-        <TextField label="Minimum version" value={d.minimumVersion} onChange={(v) => set('minimumVersion', v)} placeholder="Minimum version, e.g. 1 page" />
+        <TextField
+          label="Minimum version"
+          value={d.minimumVersion}
+          onChange={(v) => set('minimumVersion', v)}
+          placeholder="Minimum version, e.g. 1 page"
+        />
         <TextField label="Cue" value={d.cue} onChange={(v) => set('cue', v)} placeholder="Cue, e.g. After my morning coffee" />
         <TextField label="Why" value={d.why} onChange={(v) => set('why', v)} placeholder="Why it matters to you" maxLength={140} />
       </FormGroup>

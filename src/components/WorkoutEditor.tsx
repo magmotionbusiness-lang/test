@@ -25,18 +25,34 @@ export function WorkoutEditor({ value, onChange, suggestions }: Props) {
               aria-label="Exercise name"
               className="h-11 min-w-0 flex-1 bg-transparent text-headline outline-none"
             />
-            <button onClick={() => onChange(value.filter((_, j) => j !== i))} className="flex h-11 w-11 items-center justify-center text-danger" aria-label={`Remove ${ex.name || 'exercise'}`}>
+            <button
+              onClick={() => onChange(value.filter((_, j) => j !== i))}
+              className="flex h-11 w-11 items-center justify-center text-danger"
+              aria-label={`Remove ${ex.name || 'exercise'}`}
+            >
               <Trash2 size={18} aria-hidden />
             </button>
           </div>
           {ex.sets.map((set, k) => (
             <div key={k} className="flex items-center gap-2 px-4 py-1">
               <span className="w-12 text-footnote text-secondary">Set {k + 1}</span>
-              <NumberInput label={`Set ${k + 1} reps`} value={set.reps} onChange={(reps) => update(i, { ...ex, sets: ex.sets.map((s, m) => (m === k ? { ...s, reps } : s)) })} />
+              <NumberInput
+                label={`Set ${k + 1} reps`}
+                value={set.reps}
+                onChange={(reps) => update(i, { ...ex, sets: ex.sets.map((s, m) => (m === k ? { ...s, reps } : s)) })}
+              />
               <span className="text-secondary">×</span>
-              <NumberInput label={`Set ${k + 1} weight`} value={set.weight} onChange={(weight) => update(i, { ...ex, sets: ex.sets.map((s, m) => (m === k ? { ...s, weight } : s)) })} />
+              <NumberInput
+                label={`Set ${k + 1} weight`}
+                value={set.weight}
+                onChange={(weight) => update(i, { ...ex, sets: ex.sets.map((s, m) => (m === k ? { ...s, weight } : s)) })}
+              />
               <span className="text-footnote text-secondary">kg</span>
-              <button onClick={() => update(i, { ...ex, sets: ex.sets.filter((_, m) => m !== k) })} className="ml-auto flex h-11 w-9 items-center justify-center text-tertiary" aria-label={`Remove set ${k + 1}`}>
+              <button
+                onClick={() => update(i, { ...ex, sets: ex.sets.filter((_, m) => m !== k) })}
+                className="ml-auto flex h-11 w-9 items-center justify-center text-tertiary"
+                aria-label={`Remove set ${k + 1}`}
+              >
                 <X size={16} aria-hidden />
               </button>
             </div>
@@ -51,11 +67,18 @@ export function WorkoutEditor({ value, onChange, suggestions }: Props) {
       ))}
       <div className="flex flex-wrap gap-2">
         {unused.map((s) => (
-          <button key={s} onClick={() => onChange([...value, { name: s, sets: [{ reps: 5, weight: 20 }] }])} className="h-9 rounded-full bg-bg-2 px-3 text-subhead">
+          <button
+            key={s}
+            onClick={() => onChange([...value, { name: s, sets: [{ reps: 5, weight: 20 }] }])}
+            className="h-9 rounded-full bg-bg-2 px-3 text-subhead"
+          >
             + {s}
           </button>
         ))}
-        <button onClick={() => onChange([...value, { name: '', sets: [{ reps: 8, weight: 20 }] }])} className="h-9 rounded-full bg-accent px-3 text-subhead font-medium text-white">
+        <button
+          onClick={() => onChange([...value, { name: '', sets: [{ reps: 8, weight: 20 }] }])}
+          className="h-9 rounded-full bg-accent px-3 text-subhead font-medium text-white"
+        >
           + Exercise
         </button>
       </div>

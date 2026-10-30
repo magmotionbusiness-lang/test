@@ -6,7 +6,7 @@ Judgment calls made while building, newest at the bottom of each phase.
 
 - **Pinned, battle-tested dependency versions** (React 18.3, Vite 5.4, Framer Motion 11, Dexie 4.0, date-fns 3, Tailwind 3.4, TypeScript 5.6) instead of the newest majors. Stability and well-known APIs matter more than novelty for an app nobody can debug from a laptop.
 - **Swipe-left actions** will show *Skip* plus *More* (which opens Minimum version, Note, Edit) rather than four buttons; four don't fit comfortably on an iPhone row.
-- **Recharts is lazy-loaded** only on analytics screens so Home stays fast; tile grids are hand-built SVG.
+- ~~Recharts is lazy-loaded~~ → superseded in Phase 4: all charts are hand-built SVG (see below).
 - **Persistent storage**: the app calls `navigator.storage.persist()` at startup to reduce the chance iOS evicts IndexedDB, on top of the 30-day backup reminder.
 - **Default AI model** `gemini-flash-lite-latest` (an alias Google keeps current), overridable via `GEMINI_MODEL`.
 - **Entry statuses**: added `minimum` alongside done/partial/skipped/missed, so "minimum version" days can be drawn distinctly in the tile grid and still count as completed for streaks.
@@ -42,3 +42,14 @@ Judgment calls made while building, newest at the bottom of each phase.
 - **Streak freezes** (2 per calendar month, shared across habits) cover a past day with no result, from the day sheet. Built now because the day sheet is where they belong; surfaced on Home in Phase 4.
 - **Workouts** are logged per day on gym-section habits (exercises, sets of reps × kg); logging one marks a check habit done.
 - **Share card** pulled forward from Phase 6 since the habit page is where it lives: a 1080×1350 PNG drawn on a canvas, shared via the Web Share API (files), with a download fallback.
+
+## Phase 4 — Analytics
+
+- **No chart library.** The charts are single-series lines and bars; hand-built SVG (2px lines, 4px rounded bar tops, recessive grid, tap/hover tooltip, a visually hidden data table for VoiceOver) avoids ~100 KB of Recharts and matches the iOS look exactly. Single-series charts take the section's colour and need no legend; the title names the series.
+- **Pooled metrics for sections and Home**: Σ earned ÷ Σ expected across habits, so a habit with 7 scheduled days weighs more than one with 2.
+- **Global grid intensity** = share of that day's *due* habits completed (skips excluded; flexible habits count until their quota is met — the same rule as the Today list), drawn in 5 steps.
+- **Best and worst weekdays** use the last 90 days; only the best and worst bars carry a value label.
+- **"Goals at risk"**: a goal is behind when its linked habits ran below 70% over the last 14 days, or measurable progress trails elapsed time by more than 15 points, or it's past its deadline.
+- **Freeze offer on Home**: when yesterday was a scheduled, unlogged day that ended a streak of 3+, Home offers a freeze (while any are left). "Not now" is remembered per device for that day.
+- **Gym extras** appear on sections marked *Gym*: weekly volume (Σ sets × reps × kg), personal records by heaviest set with an Epley 1RM estimate, and recent workouts.
+- **Prettier** added (`npm run format`) so formatting stays consistent.

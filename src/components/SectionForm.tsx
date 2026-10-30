@@ -32,7 +32,13 @@ export function SectionForm({ open, onClose, section }: Props) {
 
   const save = async () => {
     if (!valid) return;
-    const data = { name: name.trim(), emoji: emoji || '📁', color, description: description.trim(), kind: gym ? ('gym' as const) : ('standard' as const) };
+    const data = {
+      name: name.trim(),
+      emoji: emoji || '📁',
+      color,
+      description: description.trim(),
+      kind: gym ? ('gym' as const) : ('standard' as const),
+    };
     if (section) await updateSection(section.id, data);
     else await createSection({ ...data, archived: false, order: await nextOrder('sections') });
     toast(section ? 'Section saved' : `${data.name} added`);

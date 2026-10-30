@@ -2,10 +2,7 @@ import { Share, SquarePlus } from 'lucide-react';
 import { Sheet } from './Sheet';
 
 export function isStandalone(): boolean {
-  return (
-    window.matchMedia('(display-mode: standalone)').matches ||
-    (navigator as Navigator & { standalone?: boolean }).standalone === true
-  );
+  return window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
 }
 
 export function isIosSafari(): boolean {
@@ -32,9 +29,7 @@ export function InstallGuide({ open, onClose }: { open: boolean; onClose: () => 
       <ol className="mt-6 overflow-hidden rounded-row bg-bg-2">
         {STEPS.map((s, i) => (
           <li key={i} className="flex items-center gap-3 border-[rgb(var(--separator)/0.29)] px-4 py-3 [&+&]:border-t">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[rgb(var(--fill)/0.16)] text-accent">
-              {s.icon}
-            </span>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[rgb(var(--fill)/0.16)] text-accent">{s.icon}</span>
             <span className="text-body">
               <span className="text-secondary">{i + 1}. </span>
               {s.text}
@@ -42,9 +37,7 @@ export function InstallGuide({ open, onClose }: { open: boolean; onClose: () => 
           </li>
         ))}
       </ol>
-      <p className="mt-4 px-2 text-center text-footnote text-secondary">
-        On iPad, the Share button is in the top-right of Safari.
-      </p>
+      <p className="mt-4 px-2 text-center text-footnote text-secondary">On iPad, the Share button is in the top-right of Safari.</p>
     </Sheet>
   );
 }

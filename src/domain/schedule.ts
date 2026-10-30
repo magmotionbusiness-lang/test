@@ -45,11 +45,7 @@ export function isActiveOn(habit: Pick<Habit, 'startDate' | 'archived'>, date: L
  * quota is met (`doneInPeriod` counts completions in the current period,
  * excluding `date` itself so today's check doesn't hide the row).
  */
-export function isDueOn(
-  habit: Pick<Habit, 'schedule' | 'startDate' | 'archived'>,
-  date: LocalDate,
-  doneInPeriodExcludingDate = 0,
-): boolean {
+export function isDueOn(habit: Pick<Habit, 'schedule' | 'startDate' | 'archived'>, date: LocalDate, doneInPeriodExcludingDate = 0): boolean {
   if (!isActiveOn(habit, date)) return false;
   if (!isScheduledOn(habit.schedule, date)) return false;
   if (isFlexible(habit.schedule)) return doneInPeriodExcludingDate < periodQuota(habit.schedule);

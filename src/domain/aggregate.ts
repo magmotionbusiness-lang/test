@@ -40,7 +40,10 @@ export function dailyShare(habits: HabitLike[], entries: Entry[], start: LocalDa
       due++;
       if (completed) done++;
     }
-    out.set(d, due === 0 ? { state: 'unscheduled', progress: 0 } : { state: done === due ? 'done' : done > 0 ? 'partial' : 'missed', progress: done / due });
+    out.set(
+      d,
+      due === 0 ? { state: 'unscheduled', progress: 0 } : { state: done === due ? 'done' : done > 0 ? 'partial' : 'missed', progress: done / due },
+    );
   }
   return out;
 }

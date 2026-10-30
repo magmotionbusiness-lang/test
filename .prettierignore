@@ -1,0 +1,6 @@
+dist
+node_modules
+public
+package-lock.json
+scripts/splash-links.html
+index.html

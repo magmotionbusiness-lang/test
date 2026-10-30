@@ -24,12 +24,7 @@ function isNeutral(entry: Entry | undefined): boolean {
  * consecutive periods (weeks/months) that met their quota; the period in
  * progress counts only once its quota is met.
  */
-export function computeStreak(
-  habit: HabitLike,
-  entries: Entry[],
-  today: LocalDate,
-  weekStart: 0 | 1,
-): Streak {
+export function computeStreak(habit: HabitLike, entries: Entry[], today: LocalDate, weekStart: 0 | 1): Streak {
   const byDate = new Map(entries.map((e) => [e.date, e]));
   if (isFlexible(habit.schedule)) return flexibleStreak(habit, entries, today, weekStart);
 

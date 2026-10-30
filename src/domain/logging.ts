@@ -31,7 +31,7 @@ export function tapEntry(habit: Pick<Habit, 'type' | 'target'>, current: EntryPa
       return done ? null : { value: 1, status: 'done' };
     case 'count': {
       if (done && (current?.value ?? 0) >= habit.target) return null;
-      const value = (current?.status === 'skipped' ? 0 : current?.value ?? 0) + 1;
+      const value = (current?.status === 'skipped' ? 0 : (current?.value ?? 0)) + 1;
       return { value, status: statusForValue(habit, value)! };
     }
     case 'duration':

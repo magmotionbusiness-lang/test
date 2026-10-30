@@ -124,7 +124,11 @@ export function HabitRow({ habit, entry, sectionColor, streak, onTap, onLongPres
             </span>
           </span>
           {streak && streak.current > 0 && (
-            <span className="tabular flex shrink-0 items-center gap-0.5 text-footnote font-medium" style={{ color: colorVar('orange') }} aria-label={`Streak ${streak.current} ${streak.unit}s`}>
+            <span
+              className="tabular flex shrink-0 items-center gap-0.5 text-footnote font-medium"
+              style={{ color: colorVar('orange') }}
+              aria-label={`Streak ${streak.current} ${streak.unit}s`}
+            >
               <Flame size={14} strokeWidth={2.2} aria-hidden />
               {formatStreak(streak)}
             </span>

@@ -51,7 +51,10 @@ export function HabitScreen() {
     if (!habit) return { habit };
     const [section, sections, entries, goals] = await Promise.all([
       db.sections.get(habit.sectionId),
-      db.sections.orderBy('order').filter((s) => !s.archived).toArray(),
+      db.sections
+        .orderBy('order')
+        .filter((s) => !s.archived)
+        .toArray(),
       db.entries.where('habitId').equals(id).toArray(),
       db.goals.where('status').equals('active').toArray(),
     ]);
@@ -70,7 +73,12 @@ export function HabitScreen() {
       </Page>
     );
   }
-  if (!data || !habit) return <Page title="" backLabel={backFrom ?? 'Back'}>{null}</Page>;
+  if (!data || !habit)
+    return (
+      <Page title="" backLabel={backFrom ?? 'Back'}>
+        {null}
+      </Page>
+    );
 
   const { section, sections = [], goals = [] } = data;
   const color = colorVar(habit.color);
@@ -79,9 +87,7 @@ export function HabitScreen() {
   const cons = consistencyWindow(habit, entries, today, settings.weekStart, win === 'all' ? null : Number(win));
   const qty = isQuantity(habit.type) ? quantityStats(entries, today) : null;
   const unit = streak.unit === 'day' ? 'days' : streak.unit === 'week' ? 'weeks' : 'months';
-  const history = entries
-    .filter((e) => e.status !== 'missed' || e.note || e.freeze)
-    .sort((a, b) => (a.date < b.date ? 1 : -1));
+  const history = entries.filter((e) => e.status !== 'missed' || e.note || e.freeze).sort((a, b) => (a.date < b.date ? 1 : -1));
   const exerciseNames = [...new Set(entries.flatMap((e) => e.workout?.map((w) => w.name) ?? []))];
   const linkedGoals = goals.filter((g) => habit.goalIds.includes(g.id));
 
@@ -118,7 +124,11 @@ export function HabitScreen() {
     >
       <Card className="mb-6">
         <div className="flex items-center gap-4">
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[16px] text-[30px]" style={{ background: `color-mix(in srgb, ${color} 18%, transparent)` }} aria-hidden>
+          <span
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[16px] text-[30px]"
+            style={{ background: `color-mix(in srgb, ${color} 18%, transparent)` }}
+            aria-hidden
+          >
             {habit.emoji}
           </span>
           <div className="min-w-0">
@@ -163,11 +173,30 @@ export function HabitScreen() {
           </div>
         </div>
         {view === 'year' ? (
-          <TileGrid color={color} tiles={tiles} start={gridStart} today={today} weekStart={settings.weekStart} label={`${habit.name} calendar`} onTap={onTapDay} onLongPress={setDayFor} />
+          <TileGrid
+            color={color}
+            tiles={tiles}
+            start={gridStart}
+            today={today}
+            weekStart={settings.weekStart}
+            label={`${habit.name} calendar`}
+            onTap={onTapDay}
+            onLongPress={setDayFor}
+          />
         ) : (
-          <MonthCalendar color={color} tiles={tiles} start={gridStart} today={today} weekStart={settings.weekStart} onTap={onTapDay} onLongPress={setDayFor} />
+          <MonthCalendar
+            color={color}
+            tiles={tiles}
+            start={gridStart}
+            today={today}
+            weekStart={settings.weekStart}
+            onTap={onTapDay}
+            onLongPress={setDayFor}
+          />
         )}
-        <p className="mt-3 text-caption text-secondary">Tap a day to log it. Hold a day for details, notes{section?.kind === 'gym' ? ', workouts' : ''} and streak freezes.</p>
+        <p className="mt-3 text-caption text-secondary">
+          Tap a day to log it. Hold a day for details, notes{section?.kind === 'gym' ? ', workouts' : ''} and streak freezes.
+        </p>
         <Legend color={color} />
       </Card>
 
@@ -197,7 +226,9 @@ export function HabitScreen() {
           <span className="tabular text-[40px] font-bold leading-none" style={{ color }}>
             {cons.score === null ? '—' : formatPercent(cons.score)}
           </span>
-          <span className="text-subhead text-secondary">{cons.expected > 0 ? `${formatNumber(cons.earned)} of ${formatNumber(cons.expected)} expected` : 'Nothing expected yet'}</span>
+          <span className="text-subhead text-secondary">
+            {cons.expected > 0 ? `${formatNumber(cons.earned)} of ${formatNumber(cons.expected)} expected` : 'Nothing expected yet'}
+          </span>
         </div>
         {qty && (
           <div className="mt-4 grid grid-cols-3 gap-2 border-t border-[rgb(var(--separator)/0.29)] pt-3 text-center">
@@ -212,12 +243,24 @@ export function HabitScreen() {
         {history.slice(0, historyLimit).map((e) => (
           <HistoryRow key={e.id} entry={e} unit={habit.unit} quantity={isQuantity(habit.type)} color={color} onClick={() => setDayFor(e.date)} />
         ))}
-        {history.length > historyLimit && <ListRow title={<span className="text-accent">Show more</span>} onClick={() => setHistoryLimit((n) => n + 40)} />}
+        {history.length > historyLimit && (
+          <ListRow title={<span className="text-accent">Show more</span>} onClick={() => setHistoryLimit((n) => n + 40)} />
+        )}
       </ListGroup>
 
       <ListGroup header="Actions">
-        <ListRow title="Goals" detail={linkedGoals.length ? linkedGoals.map((g) => g.title).join(', ') : 'None'} chevron onClick={() => setGoalOpen(true)} />
-        <ListRow title="Move to another section" detail={section ? `${section.emoji} ${section.name}` : ''} chevron onClick={() => setMoveOpen(true)} />
+        <ListRow
+          title="Goals"
+          detail={linkedGoals.length ? linkedGoals.map((g) => g.title).join(', ') : 'None'}
+          chevron
+          onClick={() => setGoalOpen(true)}
+        />
+        <ListRow
+          title="Move to another section"
+          detail={section ? `${section.emoji} ${section.name}` : ''}
+          chevron
+          onClick={() => setMoveOpen(true)}
+        />
         <ListRow title={habit.archived ? 'Restore habit' : 'Archive habit'} onClick={onArchive} />
         <ListRow title="Delete habit" destructive onClick={onDelete} />
       </ListGroup>
@@ -288,9 +331,27 @@ function MiniStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-const STATUS: Record<Entry['status'], string> = { done: 'Done', partial: 'Partly done', minimum: 'Minimum version', skipped: 'Skipped', missed: 'Not done' };
+const STATUS: Record<Entry['status'], string> = {
+  done: 'Done',
+  partial: 'Partly done',
+  minimum: 'Minimum version',
+  skipped: 'Skipped',
+  missed: 'Not done',
+};
 
-function HistoryRow({ entry, unit, quantity, color, onClick }: { entry: Entry; unit: string; quantity: boolean; color: string; onClick: () => void }) {
+function HistoryRow({
+  entry,
+  unit,
+  quantity,
+  color,
+  onClick,
+}: {
+  entry: Entry;
+  unit: string;
+  quantity: boolean;
+  color: string;
+  onClick: () => void;
+}) {
   const workout = entry.workout?.filter((w) => w.sets.length);
   return (
     <button onClick={onClick} className="flex w-full gap-3 px-4 py-2.5 text-left active:bg-[rgb(var(--fill)/0.16)]">
@@ -329,7 +390,16 @@ function Legend({ color }: { color: string }) {
         </span>,
         'Minimum',
       )}
-      {item(<span className={box} style={{ background: 'rgb(var(--fill)/0.22)', backgroundImage: 'linear-gradient(135deg, transparent 45%, rgb(var(--fill)/0.8) 45%, rgb(var(--fill)/0.8) 55%, transparent 55%)' }} />, 'Skipped')}
+      {item(
+        <span
+          className={box}
+          style={{
+            background: 'rgb(var(--fill)/0.22)',
+            backgroundImage: 'linear-gradient(135deg, transparent 45%, rgb(var(--fill)/0.8) 45%, rgb(var(--fill)/0.8) 55%, transparent 55%)',
+          }}
+        />,
+        'Skipped',
+      )}
       {item(<span className={box} style={{ boxShadow: 'inset 0 0 0 1px rgb(var(--fill)/0.4)' }} />, 'Missed')}
     </div>
   );

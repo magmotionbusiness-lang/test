@@ -57,6 +57,9 @@ export async function saveWorkout(habit: Habit, date: LocalDate, workout: Workou
   const current = await getEntry(habit.id, date);
   const hasSets = workout.some((x) => x.sets.length > 0);
   // Logging a workout marks a check-type gym habit as done.
-  const patch = hasSets && !(current?.status === 'done' || current?.status === 'minimum') ? { status: 'done' as const, value: habit.type === 'check' ? 1 : current?.value || habit.target } : {};
+  const patch =
+    hasSets && !(current?.status === 'done' || current?.status === 'minimum')
+      ? { status: 'done' as const, value: habit.type === 'check' ? 1 : current?.value || habit.target }
+      : {};
   await upsertEntry(habit.id, date, { ...patch, workout, freeze: false });
 }

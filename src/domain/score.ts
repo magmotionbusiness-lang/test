@@ -117,25 +117,37 @@ export function quantityStats(entries: Entry[], today: LocalDate): QuantityStats
   return { total, average: logged.length ? total / logged.length : 0, trend: before > 0 ? (recent - before) / before : null };
 }
 
-/** Completion rate per weekday (0 = Sunday) over a range, for fixed-schedule-aware analytics. */
-export function weekdayRates(habit: HabitLike, entries: Entry[], from: LocalDate, to: LocalDate, today: LocalDate): (number | null)[] {
+/** Earned and expected credit per weekday (0 = Sunday) over a range. */
+export function weekdayCounts(
+  habit: HabitLike,
+  entries: Entry[],
+  from: LocalDate,
+  to: LocalDate,
+  today: LocalDate,
+): { earned: number[]; expected: number[] } {
   const byDate = new Map(entries.map((e) => [e.date, e]));
   const earned = Array<number>(7).fill(0);
   const expected = Array<number>(7).fill(0);
   const start = from > habit.startDate ? from : habit.startDate;
   const end = to < today ? to : shiftDate(today, -1);
-  if (start > end) return Array(7).fill(null);
+  if (start > end) return { earned, expected };
   const flexible = isFlexible(habit.schedule);
   for (const d of eachDay(start, end)) {
     if (!isScheduledOn(habit.schedule, d)) continue;
     const e = byDate.get(d);
     if (neutral(e)) continue;
-    const wd = weekdayOf(d);
     // Flexible habits: only days with an entry tell us about the weekday.
     if (flexible && !e) continue;
+    const wd = weekdayOf(d);
     expected[wd]!++;
     earned[wd]! += credit(habit, e);
   }
+  return { earned, expected };
+}
+
+/** Completion rate per weekday (0 = Sunday), null where nothing was expected. */
+export function weekdayRates(habit: HabitLike, entries: Entry[], from: LocalDate, to: LocalDate, today: LocalDate): (number | null)[] {
+  const { earned, expected } = weekdayCounts(habit, entries, from, to, today);
   return expected.map((x, i) => (x > 0 ? earned[i]! / x : null));
 }
 

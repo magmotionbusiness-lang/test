@@ -30,10 +30,28 @@ export function ReorderList<T extends { id: string }>({ items, editing, onReorde
   );
 }
 
-function Item<T>({ item, editing, children, className, onDrop }: { item: T; editing: boolean; children: ReactNode; className?: string; onDrop: () => void }) {
+function Item<T>({
+  item,
+  editing,
+  children,
+  className,
+  onDrop,
+}: {
+  item: T;
+  editing: boolean;
+  children: ReactNode;
+  className?: string;
+  onDrop: () => void;
+}) {
   const controls = useDragControls();
   return (
-    <Reorder.Item value={item} dragListener={false} dragControls={controls} onDragEnd={onDrop} className={`relative flex items-center ${className ?? ''}`}>
+    <Reorder.Item
+      value={item}
+      dragListener={false}
+      dragControls={controls}
+      onDragEnd={onDrop}
+      className={`relative flex items-center ${className ?? ''}`}
+    >
       <div className="min-w-0 flex-1">{children}</div>
       {editing && (
         <button

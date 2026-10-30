@@ -69,7 +69,12 @@ export function EmojiField({ value, onChange }: { value: string; onChange: (v: s
       </div>
       <div className="no-scrollbar -mx-4 mt-3 flex gap-1 overflow-x-auto px-4">
         {EMOJI_SUGGESTIONS.map((e) => (
-          <button key={e} onClick={() => onChange(e)} className="h-11 w-11 shrink-0 rounded-[10px] text-[24px] active:bg-[rgb(var(--fill)/0.16)]" aria-label={`Use ${e}`}>
+          <button
+            key={e}
+            onClick={() => onChange(e)}
+            className="h-11 w-11 shrink-0 rounded-[10px] text-[24px] active:bg-[rgb(var(--fill)/0.16)]"
+            aria-label={`Use ${e}`}
+          >
             {e}
           </button>
         ))}
@@ -123,18 +128,42 @@ export function WeekdayPicker({ value, onChange, weekStart }: { value: Weekday[]
   );
 }
 
-export function Stepper({ value, onChange, min = 1, max = 999, step = 1, label }: { value: number; onChange: (v: number) => void; min?: number; max?: number; step?: number; label: string }) {
+export function Stepper({
+  value,
+  onChange,
+  min = 1,
+  max = 999,
+  step = 1,
+  label,
+}: {
+  value: number;
+  onChange: (v: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  label: string;
+}) {
   return (
     <div className="flex items-center gap-2">
       <span className="tabular min-w-[2.5ch] text-right text-body text-secondary" aria-live="polite">
         {value}
       </span>
       <div className="flex h-8 overflow-hidden rounded-[8px] bg-[rgb(var(--fill)/0.12)]">
-        <button aria-label={`Decrease ${label}`} disabled={value <= min} onClick={() => onChange(Math.max(min, value - step))} className="flex w-11 items-center justify-center disabled:opacity-30">
+        <button
+          aria-label={`Decrease ${label}`}
+          disabled={value <= min}
+          onClick={() => onChange(Math.max(min, value - step))}
+          className="flex w-11 items-center justify-center disabled:opacity-30"
+        >
           <Minus size={16} aria-hidden />
         </button>
         <span className="my-1.5 w-px bg-[rgb(var(--separator)/0.29)]" aria-hidden />
-        <button aria-label={`Increase ${label}`} disabled={value >= max} onClick={() => onChange(Math.min(max, value + step))} className="flex w-11 items-center justify-center disabled:opacity-30">
+        <button
+          aria-label={`Increase ${label}`}
+          disabled={value >= max}
+          onClick={() => onChange(Math.min(max, value + step))}
+          className="flex w-11 items-center justify-center disabled:opacity-30"
+        >
           <Plus size={16} aria-hidden />
         </button>
       </div>
@@ -143,11 +172,25 @@ export function Stepper({ value, onChange, min = 1, max = 999, step = 1, label }
 }
 
 /** Native <select> styled as an iOS menu row; iOS shows its own picker wheel. */
-export function SelectRow<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: { value: T; label: string }[]; onChange: (v: T) => void }) {
+export function SelectRow<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (v: T) => void;
+}) {
   return (
     <label className="flex min-h-[44px] items-center gap-3 px-4">
       <span className="flex-1 text-body">{label}</span>
-      <select value={value} onChange={(e) => onChange(e.target.value as T)} className="max-w-[60%] appearance-none bg-transparent text-right text-body text-secondary outline-none">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value as T)}
+        className="max-w-[60%] appearance-none bg-transparent text-right text-body text-secondary outline-none"
+      >
         {options.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}

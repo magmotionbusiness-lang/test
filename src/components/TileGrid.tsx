@@ -235,18 +235,45 @@ const Month = memo(
   (a, b) => a.sig === b.sig && a.color === b.color && a.tile === b.tile && a.offX === b.offX && a.mode === b.mode,
 );
 
-function TileShape({ cell, x, y, s, r, color, mode }: { cell: Cell; x: number; y: number; s: number; r: number; color: string; mode: 'habit' | 'intensity' }) {
+function TileShape({
+  cell,
+  x,
+  y,
+  s,
+  r,
+  color,
+  mode,
+}: {
+  cell: Cell;
+  x: number;
+  y: number;
+  s: number;
+  r: number;
+  color: string;
+  mode: 'habit' | 'intensity';
+}) {
   const { tile, isToday, anim } = cell;
   if (tile.state === 'future') return null;
   const cls = anim === 'pop' ? 'tile-pop' : anim === 'ripple' ? 'tile-ripple' : undefined;
   const style = anim === 'ripple' ? { animationDelay: `${cell.row * 35}ms` } : undefined;
-  const ring = isToday ? <rect x={x - 1.5} y={y - 1.5} width={s + 3} height={s + 3} rx={r + 1.5} fill="none" stroke={color} strokeWidth={1.5} /> : null;
+  const ring = isToday ? (
+    <rect x={x - 1.5} y={y - 1.5} width={s + 3} height={s + 3} rx={r + 1.5} fill="none" stroke={color} strokeWidth={1.5} />
+  ) : null;
 
   if (mode === 'intensity') {
     const level = tile.progress <= 0 ? 0 : Math.min(4, Math.max(1, Math.ceil(tile.progress * 4)));
     return (
       <>
-        <rect className={cls} x={x} y={y} width={s} height={s} rx={r} fill={level ? color : 'rgb(var(--fill) / 0.12)'} fillOpacity={level ? INTENSITY[level] : 1} />
+        <rect
+          className={cls}
+          x={x}
+          y={y}
+          width={s}
+          height={s}
+          rx={r}
+          fill={level ? color : 'rgb(var(--fill) / 0.12)'}
+          fillOpacity={level ? INTENSITY[level] : 1}
+        />
         {ring}
       </>
     );
@@ -272,7 +299,15 @@ function TileShape({ cell, x, y, s, r, color, mode }: { cell: Cell; x: number; y
       body = (
         <g>
           <rect x={x} y={y} width={s} height={s} rx={r} fill="rgb(var(--fill) / 0.22)" />
-          <line x1={x + s * 0.25} y1={y + s * 0.75} x2={x + s * 0.75} y2={y + s * 0.25} stroke="rgb(var(--fill) / 0.9)" strokeWidth={1.2} strokeLinecap="round" />
+          <line
+            x1={x + s * 0.25}
+            y1={y + s * 0.75}
+            x2={x + s * 0.75}
+            y2={y + s * 0.25}
+            stroke="rgb(var(--fill) / 0.9)"
+            strokeWidth={1.2}
+            strokeLinecap="round"
+          />
         </g>
       );
       break;

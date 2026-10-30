@@ -37,7 +37,12 @@ describe('fixed-schedule streaks', () => {
   });
 
   it('partial days break a streak', () => {
-    const s = computeStreak({ schedule: daily, startDate: '2026-10-27' }, [e('2026-10-27'), e('2026-10-28', 'partial'), e('2026-10-29')], '2026-10-29', 1);
+    const s = computeStreak(
+      { schedule: daily, startDate: '2026-10-27' },
+      [e('2026-10-27'), e('2026-10-28', 'partial'), e('2026-10-29')],
+      '2026-10-29',
+      1,
+    );
     expect(s.current).toBe(1);
   });
 

@@ -9,19 +9,7 @@ export interface BaseRecord {
   updatedAt: ISODateTime;
 }
 
-export type HabitColor =
-  | 'red'
-  | 'orange'
-  | 'yellow'
-  | 'green'
-  | 'mint'
-  | 'teal'
-  | 'cyan'
-  | 'blue'
-  | 'indigo'
-  | 'purple'
-  | 'pink'
-  | 'brown';
+export type HabitColor = 'red' | 'orange' | 'yellow' | 'green' | 'mint' | 'teal' | 'cyan' | 'blue' | 'indigo' | 'purple' | 'pink' | 'brown';
 
 export interface Section extends BaseRecord {
   name: string;

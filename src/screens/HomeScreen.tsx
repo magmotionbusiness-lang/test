@@ -16,6 +16,10 @@ import { NavButton, Page } from '@/components/Page';
 import { EmptyState, ListGroup, PrimaryButton, ProgressRing } from '@/components/ui';
 import { eachDay, formatDay, shiftDate, today as todayFn } from '@/domain/dates';
 import { computeStreak } from '@/domain/streaks';
+import { freezeCandidates } from '@/domain/analytics';
+import { useFreezesLeft } from '@/app/useFreezes';
+import { FreezeOffer } from '@/components/FreezeOffer';
+import { HomeOverview } from '@/components/HomeOverview';
 import { TIME_OF_DAY_LABEL, todayGroups } from '@/domain/today';
 import { colorVar } from '@/lib/colors';
 
@@ -34,17 +38,24 @@ export function HomeScreen() {
   const [formOpen, setFormOpen] = useState(false);
 
   const data = useLiveQuery(async () => {
-    const [habits, sections, entries] = await Promise.all([
+    const [habits, sections, entries, goals] = await Promise.all([
       db.habits.filter((h) => !h.archived).toArray(),
       db.sections.toArray(),
       db.entries.where('date').between(shiftDate(today, -STREAK_WINDOW), today, true, true).toArray(),
+      db.goals.where('status').equals('active').toArray(),
     ]);
-    return { habits, sections, entries };
+    return { habits, sections, entries, goals };
   }, [today]);
 
   const groups = useMemo(() => (data ? todayGroups(data.habits, data.entries, date, settings.weekStart) : []), [data, date, settings.weekStart]);
   const all = groups.flatMap((g) => g.items);
   const doneCount = all.filter((i) => i.completed).length;
+
+  const freezeOffers = useMemo(
+    () => (data ? freezeCandidates(data.habits, data.entries, today, settings.weekStart) : []),
+    [data, today, settings.weekStart],
+  );
+  const freezesLeft = useFreezesLeft(freezeOffers.length ? shiftDate(today, -1) : null);
 
   const sectionColor = useMemo(() => new Map(data?.sections.map((s) => [s.id, colorVar(s.color)]) ?? []), [data]);
 
@@ -87,7 +98,13 @@ export function HomeScreen() {
       title={isToday ? 'Today' : formatDay(date, 'EEEE')}
       subtitle={isToday ? formatDay(date, 'EEEE, d MMMM') : formatDay(date, 'd MMMM yyyy')}
       actions={
-        <NavButton label="New habit" onClick={() => { setEditing(undefined); setFormOpen(true); }}>
+        <NavButton
+          label="New habit"
+          onClick={() => {
+            setEditing(undefined);
+            setFormOpen(true);
+          }}
+        >
           <Plus size={26} aria-hidden />
         </NavButton>
       }
@@ -97,22 +114,42 @@ export function HomeScreen() {
             <span className="tabular text-subhead text-secondary">
               {doneCount}/{all.length}
             </span>
-            <ProgressRing value={doneCount} total={all.length} size={36} stroke={4.5} color={doneCount === all.length ? 'rgb(var(--success))' : undefined} label={`${doneCount} of ${all.length} habits done`} />
+            <ProgressRing
+              value={doneCount}
+              total={all.length}
+              size={36}
+              stroke={4.5}
+              color={doneCount === all.length ? 'rgb(var(--success))' : undefined}
+              label={`${doneCount} of ${all.length} habits done`}
+            />
           </div>
         )
       }
     >
       {data && data.habits.length > 0 && <DateStrip value={date} today={today} onChange={setDate} completion={completion} />}
 
+      {isToday && <FreezeOffer candidates={freezeOffers} today={today} freezesLeft={freezesLeft} />}
+
       {data && data.habits.length === 0 && (
         <EmptyState
           title="Nothing to track yet"
           message="Add your first habit to start filling tiles. Or load demo data from Settings to explore."
-          action={<PrimaryButton onClick={() => { setEditing(undefined); setFormOpen(true); }}>Add your first habit</PrimaryButton>}
+          action={
+            <PrimaryButton
+              onClick={() => {
+                setEditing(undefined);
+                setFormOpen(true);
+              }}
+            >
+              Add your first habit
+            </PrimaryButton>
+          }
         />
       )}
 
-      {data && data.habits.length > 0 && all.length === 0 && <EmptyState title="A free day" message="No habits are scheduled for this day. Enjoy the rest." />}
+      {data && data.habits.length > 0 && all.length === 0 && (
+        <EmptyState title="A free day" message="No habits are scheduled for this day. Enjoy the rest." />
+      )}
 
       {groups.map((g) => (
         <ListGroup key={g.timeOfDay} header={TIME_OF_DAY_LABEL[g.timeOfDay]}>
@@ -134,9 +171,18 @@ export function HomeScreen() {
         </ListGroup>
       ))}
 
-      {all.length > 0 && <p className="px-4 text-center text-footnote text-secondary">Swipe right to complete · Swipe left to skip</p>}
+      {all.length > 0 && <p className="mb-6 px-4 text-center text-footnote text-secondary">Swipe right to complete · Swipe left to skip</p>}
 
-      <AmountSheet habit={amountFor} entry={entryFor(amountFor)} onClose={() => setAmountFor(null)} onSave={(v) => amountFor && setHabitValue(amountFor, date, v)} />
+      {data && data.habits.length > 0 && isToday && (
+        <HomeOverview habits={data.habits} entries={data.entries} goals={data.goals} today={today} weekStart={settings.weekStart} />
+      )}
+
+      <AmountSheet
+        habit={amountFor}
+        entry={entryFor(amountFor)}
+        onClose={() => setAmountFor(null)}
+        onSave={(v) => amountFor && setHabitValue(amountFor, date, v)}
+      />
 
       <ActionSheet
         open={moreFor !== null}
@@ -145,10 +191,20 @@ export function HomeScreen() {
         actions={
           moreFor
             ? [
-                ...(moreFor.minimumVersion ? [{ label: `Minimum: ${moreFor.minimumVersion}`, onSelect: () => minimumHabit(moreFor, date) }] : [{ label: 'Log minimum version', onSelect: () => minimumHabit(moreFor, date) }]),
-                ...(moreFor.type !== 'check' && moreFor.type !== 'avoid' ? [{ label: 'Enter exact amount', onSelect: () => setAmountFor(moreFor) }] : []),
+                ...(moreFor.minimumVersion
+                  ? [{ label: `Minimum: ${moreFor.minimumVersion}`, onSelect: () => minimumHabit(moreFor, date) }]
+                  : [{ label: 'Log minimum version', onSelect: () => minimumHabit(moreFor, date) }]),
+                ...(moreFor.type !== 'check' && moreFor.type !== 'avoid'
+                  ? [{ label: 'Enter exact amount', onSelect: () => setAmountFor(moreFor) }]
+                  : []),
                 { label: entryFor(moreFor)?.note ? 'Edit note' : 'Add note', onSelect: () => setNoteFor(moreFor) },
-                { label: 'Edit habit', onSelect: () => { setEditing(moreFor); setFormOpen(true); } },
+                {
+                  label: 'Edit habit',
+                  onSelect: () => {
+                    setEditing(moreFor);
+                    setFormOpen(true);
+                  },
+                },
                 ...(entryFor(moreFor) ? [{ label: 'Clear this day', destructive: true, onSelect: () => clearHabit(moreFor, date) }] : []),
               ]
             : []

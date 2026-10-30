@@ -26,12 +26,7 @@ export interface TodayItem {
  * bottom of their group. `entries` must include every entry in the current
  * week/month window so flexible quotas can be evaluated.
  */
-export function todayGroups(
-  habits: Habit[],
-  entries: Entry[],
-  date: LocalDate,
-  weekStart: 0 | 1,
-): { timeOfDay: TimeOfDay; items: TodayItem[] }[] {
+export function todayGroups(habits: Habit[], entries: Entry[], date: LocalDate, weekStart: 0 | 1): { timeOfDay: TimeOfDay; items: TodayItem[] }[] {
   const byHabit = new Map<string, Entry[]>();
   for (const e of entries) {
     const list = byHabit.get(e.habitId);
@@ -58,9 +53,6 @@ export function todayGroups(
     timeOfDay,
     items: items
       .filter((i) => i.habit.timeOfDay === timeOfDay)
-      .sort(
-        (a, b) =>
-          Number(a.completed) - Number(b.completed) || a.habit.order - b.habit.order || a.habit.name.localeCompare(b.habit.name),
-      ),
+      .sort((a, b) => Number(a.completed) - Number(b.completed) || a.habit.order - b.habit.order || a.habit.name.localeCompare(b.habit.name)),
   })).filter((g) => g.items.length > 0);
 }
