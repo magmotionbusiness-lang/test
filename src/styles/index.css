@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* iOS system colors as RGB triplets, so Tailwind can apply alpha. */
+:root {
+  color-scheme: light;
+  --bg: 242 242 247; /* systemGroupedBackground */
+  --bg-2: 255 255 255; /* secondarySystemGroupedBackground */
+  --bg-3: 242 242 247; /* tertiarySystemGroupedBackground */
+  --label: 0 0 0;
+  --label-2: 60 60 67; /* used at ~60% */
+  --label-3: 60 60 67; /* used at ~30% */
+  --separator: 60 60 67;
+  --fill: 120 120 128;
+  --accent: 0 122 255;
+  --danger: 255 59 48;
+  --success: 52 199 89;
+  --bar-material: rgba(249, 249, 249, 0.78);
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: 0 0 0;
+  --bg-2: 28 28 30;
+  --bg-3: 44 44 46;
+  --label: 255 255 255;
+  --label-2: 235 235 245;
+  --label-3: 235 235 245;
+  --separator: 84 84 88;
+  --fill: 120 120 128;
+  --accent: 10 132 255;
+  --danger: 255 69 58;
+  --success: 48 209 88;
+  --bar-material: rgba(22, 22, 24, 0.75);
+  --card-shadow: none;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-bg font-sans text-body text-label antialiased;
+    overscroll-behavior-y: none;
+  }
+
+  button,
+  [role='button'],
+  [role='tab'],
+  a {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .text-secondary {
+    color: rgb(var(--label-2) / 0.6);
+  }
+  .text-tertiary {
+    color: rgb(var(--label-3) / 0.3);
+  }
+  .hairline {
+    border-color: rgb(var(--separator) / 0.29);
+  }
+  .material-bar {
+    background: var(--bar-material);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+  }
+  .shadow-card {
+    box-shadow: var(--card-shadow);
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .px-safe {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+}
