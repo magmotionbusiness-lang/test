@@ -1,5 +1,5 @@
 import { deleteEntry, getEntry, restoreEntry, upsertEntry } from '@/db/repo';
-import type { Habit, LocalDate } from '@/db/types';
+import type { Habit, LocalDate, WorkoutExercise } from '@/db/types';
 import { tapEntry, valueEntry, type EntryPatch } from '@/domain/logging';
 import { toast } from '@/components/Toast';
 
@@ -45,4 +45,18 @@ export async function saveNote(habit: Habit, date: LocalDate, note: string): Pro
   const current = await getEntry(habit.id, date);
   // A note on a day with no result yet is stored on a "missed" entry; it keeps the day empty in grids.
   await upsertEntry(habit.id, date, current ? { note } : { note, status: 'missed', value: 0 });
+}
+
+export async function freezeDay(habit: Habit, date: LocalDate): Promise<void> {
+  const previous = await getEntry(habit.id, date);
+  await upsertEntry(habit.id, date, { status: 'missed', value: 0, freeze: true });
+  toast('Streak freeze used — your streak is protected', () => restoreEntry(habit.id, date, previous));
+}
+
+export async function saveWorkout(habit: Habit, date: LocalDate, workout: WorkoutExercise[]): Promise<void> {
+  const current = await getEntry(habit.id, date);
+  const hasSets = workout.some((x) => x.sets.length > 0);
+  // Logging a workout marks a check-type gym habit as done.
+  const patch = hasSets && !(current?.status === 'done' || current?.status === 'minimum') ? { status: 'done' as const, value: habit.type === 'check' ? 1 : current?.value || habit.target } : {};
+  await upsertEntry(habit.id, date, { ...patch, workout, freeze: false });
 }

@@ -29,3 +29,16 @@ Judgment calls made while building, newest at the bottom of each phase.
 - **Delete vs archive**: archiving keeps history and is undoable; deleting asks for confirmation and removes history.
 - **Swipe actions are hidden from VoiceOver while closed**; every action is also reachable from the habit page. A dedicated VoiceOver pass comes in Phase 6.
 - **Notes on days with no result** are stored on an entry with status `missed`, so the grid still shows the day as empty.
+
+## Phase 3 — Tile calendar
+
+- **One `<TileGrid>`** (single SVG, tiles grouped and memoised by month, coordinate hit-testing instead of per-tile listeners). Measured with 5 years × 12 habits of data: habit page ready in ~0.2 s, a toggle re-renders in ~0.15 s, horizontal scroll at 60 fps.
+- **Month view** is an HTML grid of real buttons rather than SVG, so VoiceOver reads each day ("Friday 16 October: done").
+- **Tile states never rely on colour alone**: skipped has a diagonal stroke, minimum a centre dot, missed an outline, today a ring; a legend sits under the calendar.
+- **Flexible habits** (X per week/month) have no required days, so their empty days are drawn as quiet "not scheduled" tiles rather than misses.
+- **Tap a past tile**: check/avoid toggle; quantity habits open the amount sheet. **Hold** opens the day sheet (status, amount, note, workout, streak freeze). Using a sheet instead of a floating popover keeps it reachable with one thumb and works with VoiceOver.
+- **Grids start at least 26 weeks back** even for brand-new habits, so the calendar never looks empty or cramped.
+- **Consistency** = earned ÷ expected. Done and minimum earn 1, partial earns its share; skipped and frozen days are removed from "expected"; today only counts once logged; for flexible habits the period in progress can only raise the score.
+- **Streak freezes** (2 per calendar month, shared across habits) cover a past day with no result, from the day sheet. Built now because the day sheet is where they belong; surfaced on Home in Phase 4.
+- **Workouts** are logged per day on gym-section habits (exercises, sets of reps × kg); logging one marks a check habit done.
+- **Share card** pulled forward from Phase 6 since the habit page is where it lives: a 1080×1350 PNG drawn on a canvas, shared via the Web Share API (files), with a download fallback.

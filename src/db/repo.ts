@@ -152,3 +152,19 @@ export async function nextOrder(table: 'sections' | 'habits', sectionId?: string
   const rows = sectionId ? await db.habits.where('sectionId').equals(sectionId).toArray() : await db[table].toArray();
   return rows.reduce((m, r) => Math.max(m, r.order + 1), 0);
 }
+
+export async function updateGoal(id: string, patch: Partial<Goal>): Promise<void> {
+  await db.goals.update(id, { ...patch, updatedAt: nowIso() });
+}
+
+/** Links or unlinks a habit and a goal on both sides. */
+export async function setHabitGoalLink(habitId: string, goalId: string, linked: boolean): Promise<void> {
+  await db.transaction('rw', db.habits, db.goals, async () => {
+    const [habit, goal] = await Promise.all([db.habits.get(habitId), db.goals.get(goalId)]);
+    if (!habit || !goal) return;
+    const now = nowIso();
+    const toggle = (ids: string[], id: string) => (linked ? [...new Set([...ids, id])] : ids.filter((x) => x !== id));
+    await db.habits.update(habitId, { goalIds: toggle(habit.goalIds, goalId), updatedAt: now });
+    await db.goals.update(goalId, { habitIds: toggle(goal.habitIds, habitId), updatedAt: now });
+  });
+}
