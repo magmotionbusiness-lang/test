@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { lazy, Suspense, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Stack } from './Stack';
 import { useApplyAccent, useApplyTheme } from './theme';
 import { useSettings } from './useSettings';
@@ -8,13 +10,18 @@ import { InstallGuide, isIosSafari } from '@/components/InstallGuide';
 import { updateSettings } from '@/db/repo';
 import { db } from '@/db/db';
 import { HomeScreen } from '@/screens/HomeScreen';
-import { SectionsScreen } from '@/screens/SectionsScreen';
-import { GoalsScreen } from '@/screens/GoalsScreen';
-import { InsightsScreen } from '@/screens/InsightsScreen';
-import { SettingsScreen } from '@/screens/SettingsScreen';
-import { SectionScreen } from '@/screens/SectionScreen';
-import { HabitScreen } from '@/screens/HabitScreen';
-import { GoalScreen } from '@/screens/GoalScreen';
+
+// Home ships in the main bundle; every other screen loads on first visit.
+const named = <K extends string>(load: () => Promise<Record<K, React.ComponentType>>, key: K) =>
+  lazy(() => load().then((m) => ({ default: m[key] })));
+const SectionsScreen = named(() => import('@/screens/SectionsScreen'), 'SectionsScreen');
+const SectionScreen = named(() => import('@/screens/SectionScreen'), 'SectionScreen');
+const HabitScreen = named(() => import('@/screens/HabitScreen'), 'HabitScreen');
+const GoalsScreen = named(() => import('@/screens/GoalsScreen'), 'GoalsScreen');
+const GoalScreen = named(() => import('@/screens/GoalScreen'), 'GoalScreen');
+const InsightsScreen = named(() => import('@/screens/InsightsScreen'), 'InsightsScreen');
+const SettingsScreen = named(() => import('@/screens/SettingsScreen'), 'SettingsScreen');
+const Onboarding = lazy(() => import('@/screens/Onboarding').then((m) => ({ default: m.Onboarding })));
 
 const ROUTES = [
   { path: '/', element: <HomeScreen /> },
@@ -33,6 +40,12 @@ export function App() {
   useApplyTheme(settings.theme);
   useApplyAccent(settings.accent);
   const [installOpen, setInstallOpen] = useState(false);
+  const navigate = useNavigate();
+  // undefined while loading, so returning users never see onboarding flash.
+  const firstRun = useLiveQuery(async () => {
+    const s = await db.settings.get('settings');
+    return !s?.onboardingDone && (await db.habits.count()) === 0;
+  }, []);
 
   // First launch in Safari (not yet installed): show the install guide once.
   useEffect(() => {
@@ -56,6 +69,11 @@ export function App() {
         <Stack routes={ROUTES} />
       </main>
       <TabBar />
+      {firstRun && (
+        <Suspense fallback={null}>
+          <Onboarding onFinish={(next) => (next === 'goal' ? navigate('/goals', { state: { newGoal: true } }) : navigate('/'))} />
+        </Suspense>
+      )}
       <ToastHost />
       <InstallGuide open={installOpen} onClose={closeInstall} />
     </div>

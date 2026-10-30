@@ -42,7 +42,7 @@ export function ReviewCards({
 
       {result.strong.length > 0 && (
         <Card>
-          <CardTitle icon={<CircleCheck size={18} className="text-success" aria-hidden />}>Strong</CardTitle>
+          <CardTitle icon={<CircleCheck size={18} className="text-success-text" aria-hidden />}>Strong</CardTitle>
           <Points items={result.strong} />
         </Card>
       )}
@@ -75,10 +75,10 @@ export function ReviewCards({
                   <span
                     className={`shrink-0 rounded-full px-2 py-0.5 text-caption font-semibold ${
                       g.status === 'behind'
-                        ? 'bg-danger/15 text-danger'
+                        ? 'bg-danger/15 text-danger-text'
                         : g.status === 'unclear'
                           ? 'bg-[rgb(var(--fill)/0.16)] text-secondary'
-                          : 'bg-success/15 text-success'
+                          : 'bg-success/15 text-success-text'
                     }`}
                   >
                     {GOAL_LABEL[g.status]}
@@ -95,7 +95,7 @@ export function ReviewCards({
         <ol className="grid gap-3">
           {result.nextSteps.map((s, i) => (
             <li key={i} className="flex gap-3">
-              <span className="tabular flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-caption font-bold text-white">
+              <span className="tabular flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-fill text-caption font-bold text-white">
                 {i + 1}
               </span>
               <span>
@@ -158,7 +158,7 @@ export function ErrorCard({ message, offline, onRetry }: { message: string; offl
       <p className="text-headline">{offline ? 'You’re offline' : 'That didn’t work'}</p>
       <p className="mx-auto mt-1 max-w-xs text-subhead text-secondary">{message}</p>
       {onRetry && (
-        <button onClick={onRetry} className="mt-3 h-11 rounded-full bg-accent px-5 text-headline text-white">
+        <button onClick={onRetry} className="mt-3 h-11 rounded-full bg-accent-fill px-5 text-headline text-white">
           Retry
         </button>
       )}

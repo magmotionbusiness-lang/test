@@ -36,7 +36,7 @@ export function DateStrip({
             aria-selected={active}
             aria-label={`${formatDay(d, 'EEEE d MMMM')}${d === today ? ', today' : ''}, ${Math.round(pct * 100)}% done`}
             onClick={() => onChange(d)}
-            className={`flex h-[62px] w-11 shrink-0 flex-col items-center justify-center gap-1 rounded-[12px] transition-colors ${active ? 'bg-accent text-white' : ''}`}
+            className={`flex h-[62px] w-11 shrink-0 flex-col items-center justify-center gap-1 rounded-[12px] transition-colors ${active ? 'bg-accent-fill text-white' : ''}`}
           >
             <span className={`text-[11px] font-medium uppercase ${active ? 'text-white/80' : 'text-secondary'}`}>{formatDay(d, 'EEEEE')}</span>
             <span className={`tabular text-[17px] ${d === today && !active ? 'font-bold text-accent' : 'font-semibold'}`}>{formatDay(d, 'd')}</span>

@@ -92,9 +92,7 @@ export function SectionsScreen() {
                   </span>
                   {week !== null && (
                     <span className="shrink-0 text-right">
-                      <span className="tabular block text-headline" style={{ color: colorVar(s.color) }}>
-                        {formatPercent(week)}
-                      </span>
+                      <span className="tabular block text-headline">{formatPercent(week)}</span>
                       <span className="block text-caption text-secondary">this week</span>
                     </span>
                   )}

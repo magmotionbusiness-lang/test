@@ -9,11 +9,17 @@
   --bg-2: 255 255 255; /* secondarySystemGroupedBackground */
   --bg-3: 242 242 247; /* tertiarySystemGroupedBackground */
   --label: 0 0 0;
-  --label-2: 60 60 67; /* used at ~60% */
+  --label-2: 60 60 67;
+  /* iOS uses 60%; 74% keeps secondary text at WCAG AA (4.5:1) on the grouped background. */
+  --label-2-alpha: 0.74;
   --label-3: 60 60 67; /* used at ~30% */
   --separator: 60 60 67;
   --fill: 120 120 128;
-  --accent: 0 122 255;
+  /* Accent for text/icons, and a fill variant for white-on-accent; both tuned to WCAG AA at runtime. */
+  --accent: 0 101 212;
+  --accent-fill: 0 101 212;
+  --success-text: 26 127 55;
+  --danger-text: 200 30 20;
   --danger: 255 59 48;
   --success: 52 199 89;
   --bar-material: rgba(249, 249, 249, 0.78);
@@ -27,10 +33,14 @@
   --bg-3: 44 44 46;
   --label: 255 255 255;
   --label-2: 235 235 245;
+  --label-2-alpha: 0.6;
   --label-3: 235 235 245;
   --separator: 84 84 88;
   --fill: 120 120 128;
   --accent: 10 132 255;
+  --accent-fill: 0 104 201;
+  --success-text: 48 209 88;
+  --danger-text: 255 105 97;
   --danger: 255 69 58;
   --success: 48 209 88;
   --bar-material: rgba(22, 22, 24, 0.75);
@@ -72,7 +82,7 @@
 
 @layer utilities {
   .text-secondary {
-    color: rgb(var(--label-2) / 0.6);
+    color: rgb(var(--label-2) / var(--label-2-alpha));
   }
   .text-tertiary {
     color: rgb(var(--label-3) / 0.3);

@@ -4,7 +4,6 @@ import type { Entry, Habit, LocalDate, WorkoutExercise } from '@/db/types';
 import { formatDay } from '@/domain/dates';
 import { canFreeze } from '@/domain/freezes';
 import { isQuantity } from '@/domain/logging';
-import { colorVar } from '@/lib/colors';
 import { Sheet } from './Sheet';
 import { WorkoutEditor } from './WorkoutEditor';
 
@@ -90,7 +89,7 @@ export function DaySheet({ habit, date, entry, today, freezesLeft, isGym, exerci
         </span>
         <div>
           <div className="text-headline">{habit.name}</div>
-          <div className="text-subhead" style={{ color: entry && entry.status !== 'missed' ? colorVar(habit.color) : undefined }}>
+          <div className="text-subhead text-secondary">
             {status}
             {entry && quantity && entry.value > 0 && entry.status !== 'skipped' ? ` · ${entry.value} ${habit.unit}` : ''}
           </div>
@@ -158,7 +157,7 @@ export function DaySheet({ habit, date, entry, today, freezesLeft, isGym, exerci
 
 function QuickButton({ children, onClick, danger }: { children: React.ReactNode; onClick: () => void; danger?: boolean }) {
   return (
-    <button onClick={onClick} className={`h-11 rounded-[12px] bg-bg-2 text-subhead font-medium ${danger ? 'text-danger' : 'text-accent'}`}>
+    <button onClick={onClick} className={`h-11 rounded-[12px] bg-bg-2 text-subhead font-medium ${danger ? 'text-danger-text' : 'text-accent'}`}>
       {children}
     </button>
   );

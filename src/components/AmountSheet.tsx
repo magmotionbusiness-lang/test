@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Minus, Plus } from 'lucide-react';
 import type { Entry, Habit } from '@/db/types';
 import { presetsFor } from '@/domain/logging';
-import { colorVar } from '@/lib/colors';
 import { Sheet } from './Sheet';
 
 interface Props {
@@ -64,7 +63,6 @@ export function AmountSheet({ habit, entry, onClose, onSave }: Props) {
                 placeholder="0"
                 aria-label={`Amount in ${habit.unit}`}
                 className="tabular w-32 bg-transparent text-center text-[48px] font-semibold outline-none"
-                style={{ color: colorVar(habit.color) }}
               />
               <span className="text-body text-secondary">{habit.unit}</span>
             </label>

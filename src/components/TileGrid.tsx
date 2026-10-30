@@ -128,7 +128,8 @@ export function TileGrid({ color, tiles, start, today, weekStart, size = 'year',
   const filled = days.filter((t) => isFilled(t, mode)).length;
 
   return (
-    <div ref={scrollRef} className="no-scrollbar -mx-1 overflow-x-auto px-1">
+    // Focusable so keyboard and switch-control users can scroll long histories.
+    <div ref={scrollRef} className="no-scrollbar -mx-1 overflow-x-auto px-1" tabIndex={0} role="group" aria-label={label}>
       <svg
         width={width}
         height={height}
@@ -177,7 +178,7 @@ export function TileGrid({ color, tiles, start, today, weekStart, size = 'year',
         }}
       >
         {labels && (
-          <g className="fill-[rgb(var(--label-2)/0.6)] text-[10px]" aria-hidden>
+          <g className="fill-[rgb(var(--label-2)/var(--label-2-alpha))] text-[10px]" aria-hidden>
             {monthLabels.map((m) => (
               <text key={m.x} x={m.x} y={11}>
                 {m.text}

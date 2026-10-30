@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ChevronRight, Plus } from 'lucide-react';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useSettings } from '@/app/useSettings';
 import { db } from '@/db/db';
 import type { Goal, Habit } from '@/db/types';
@@ -19,6 +19,12 @@ export function GoalsScreen() {
   const today = todayFn();
   const [plannerOpen, setPlannerOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
+  const location = useLocation();
+
+  // Onboarding's "Start from a goal with AI" lands here with the planner open.
+  useEffect(() => {
+    if ((location.state as { newGoal?: boolean } | null)?.newGoal) setPlannerOpen(true);
+  }, [location.state]);
 
   const data = useLiveQuery(async () => {
     const [goals, habits, entries] = await Promise.all([
@@ -94,7 +100,7 @@ export function GoalsScreen() {
 }
 
 export function GoalStatusBadge({ status }: { status: GoalPace['status'] }) {
-  const cls = status === 'behind' ? 'bg-danger/15 text-danger' : 'bg-success/15 text-success';
+  const cls = status === 'behind' ? 'bg-danger/15 text-danger-text' : 'bg-success/15 text-success-text';
   return (
     <span className={`shrink-0 rounded-full px-2 py-0.5 text-caption font-semibold ${cls}`}>
       {status === 'behind' ? 'Behind' : status === 'done' ? 'Done' : 'On track'}

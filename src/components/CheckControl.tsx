@@ -115,9 +115,7 @@ export function CheckControl({ habit, entry, onTap, onLongPress }: Props) {
         ) : skipped ? (
           <Minus size={16} strokeWidth={2.5} style={{ color }} />
         ) : habit.type === 'count' && (entry?.value ?? 0) > 0 ? (
-          <span className="tabular text-[12px] font-semibold" style={{ color }}>
-            {entry!.value}
-          </span>
+          <span className="tabular text-[12px] font-semibold text-label">{entry!.value}</span>
         ) : habit.type === 'count' ? (
           <Plus size={16} strokeWidth={2.5} style={{ color }} />
         ) : null}

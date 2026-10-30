@@ -78,7 +78,7 @@ export function HomeOverview({ habits, entries, goals, today, weekStart }: Props
           <div className="text-footnote text-secondary">This week</div>
           <div className="tabular text-title">{week.thisWeek === null ? '—' : formatPercent(week.thisWeek)}</div>
           {delta !== null && (
-            <div className={`mt-0.5 flex items-center gap-1 text-footnote font-medium ${delta >= 0 ? 'text-success' : 'text-danger'}`}>
+            <div className={`mt-0.5 flex items-center gap-1 text-footnote font-medium ${delta >= 0 ? 'text-success-text' : 'text-danger-text'}`}>
               {delta >= 0 ? <TrendingUp size={14} aria-hidden /> : <TrendingDown size={14} aria-hidden />}
               {delta >= 0 ? '+' : '−'}
               {Math.abs(delta)} pts vs last week
@@ -96,8 +96,8 @@ export function HomeOverview({ habits, entries, goals, today, weekStart }: Props
             >
               <span aria-hidden>{habit.emoji}</span>
               <span className="min-w-0 flex-1 truncate text-subhead">{habit.name}</span>
-              <span className="tabular flex items-center text-footnote font-semibold text-[var(--c-orange)]">
-                <Flame size={12} aria-hidden />
+              <span className="tabular flex items-center text-footnote font-semibold text-secondary">
+                <Flame size={12} className="text-[var(--c-orange)]" aria-hidden />
                 {formatStreak(streak)}
               </span>
             </button>
@@ -108,7 +108,7 @@ export function HomeOverview({ habits, entries, goals, today, weekStart }: Props
       {atRisk.length > 0 && (
         <Card className="mb-3">
           <h3 className="mb-2 flex items-center gap-2 text-headline">
-            <Target size={18} className="text-danger" aria-hidden /> Goals at risk
+            <Target size={18} className="text-danger-text" aria-hidden /> Goals at risk
           </h3>
           {atRisk.map(({ goal, pace }) => (
             <button

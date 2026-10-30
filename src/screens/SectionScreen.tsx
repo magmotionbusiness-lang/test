@@ -123,9 +123,7 @@ export function SectionScreen() {
           <div className="mb-3 flex items-end justify-between gap-3">
             <div>
               <div className="text-footnote text-secondary">This week</div>
-              <div className="tabular text-[34px] font-bold leading-tight" style={{ color }}>
-                {stats.week.thisWeek === null ? '—' : pct(stats.week.thisWeek)}
-              </div>
+              <div className="tabular text-[34px] font-bold leading-tight">{stats.week.thisWeek === null ? '—' : pct(stats.week.thisWeek)}</div>
             </div>
             <WeekDelta thisWeek={stats.week.thisWeek} lastWeek={stats.week.lastWeek} />
           </div>
@@ -277,7 +275,7 @@ function WeekDelta({ thisWeek, lastWeek }: { thisWeek: number | null; lastWeek: 
   const up = d >= 0;
   return (
     <div className="text-right">
-      <div className={`tabular text-headline ${up ? 'text-success' : 'text-danger'}`}>
+      <div className={`tabular text-headline ${up ? 'text-success-text' : 'text-danger-text'}`}>
         {up ? '▲' : '▼'} {Math.abs(d)} pts
       </div>
       <div className="text-footnote text-secondary">vs last week ({formatPercent(lastWeek)})</div>

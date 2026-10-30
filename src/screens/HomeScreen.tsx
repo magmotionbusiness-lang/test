@@ -20,6 +20,9 @@ import { freezeCandidates } from '@/domain/analytics';
 import { useFreezesLeft } from '@/app/useFreezes';
 import { FreezeOffer } from '@/components/FreezeOffer';
 import { HomeOverview } from '@/components/HomeOverview';
+import { BackupReminder } from '@/components/BackupReminder';
+import { Celebration } from '@/components/Celebration';
+import { DailyCheckIn } from '@/components/DailyCheckIn';
 import { TIME_OF_DAY_LABEL, todayGroups } from '@/domain/today';
 import { colorVar } from '@/lib/colors';
 
@@ -129,6 +132,12 @@ export function HomeScreen() {
       {data && data.habits.length > 0 && <DateStrip value={date} today={today} onChange={setDate} completion={completion} />}
 
       {isToday && <FreezeOffer candidates={freezeOffers} today={today} freezesLeft={freezesLeft} />}
+      {isToday && data && data.habits.length > 0 && (
+        <BackupReminder
+          settings={settings}
+          firstActivity={data.habits.reduce<string | null>((m, h) => (!m || h.createdAt < m ? h.createdAt : m), null)}
+        />
+      )}
 
       {data && data.habits.length === 0 && (
         <EmptyState
@@ -173,9 +182,15 @@ export function HomeScreen() {
 
       {all.length > 0 && <p className="mb-6 px-4 text-center text-footnote text-secondary">Swipe right to complete · Swipe left to skip</p>}
 
+      {data && data.habits.length > 0 && (!isToday || new Date().getHours() >= 17 || (all.length > 0 && doneCount === all.length)) && (
+        <DailyCheckIn date={date} title={isToday ? 'Daily check-in' : `Check-in · ${formatDay(date, 'EEEE')}`} />
+      )}
+
       {data && data.habits.length > 0 && isToday && (
         <HomeOverview habits={data.habits} entries={data.entries} goals={data.goals} today={today} weekStart={settings.weekStart} />
       )}
+
+      <Celebration allDone={isToday && all.length > 0 && doneCount === all.length} date={today} />
 
       <AmountSheet
         habit={amountFor}

@@ -238,7 +238,7 @@ export function GoalPlanner({ open, onClose, onManual, onCreated }: Props) {
                       key={o}
                       aria-pressed={on}
                       onClick={() => setAnswers((a) => ({ ...a, [q.id]: o }))}
-                      className={`min-h-[36px] rounded-full px-3.5 text-subhead ${on ? 'bg-accent text-white' : 'bg-bg-2'}`}
+                      className={`min-h-[36px] rounded-full px-3.5 text-subhead ${on ? 'bg-accent-fill text-white' : 'bg-bg-2'}`}
                     >
                       {o}
                     </button>

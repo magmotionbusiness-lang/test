@@ -37,7 +37,7 @@ export function ActionSheet({ open, title, actions, onClose }: { open: boolean; 
                     onClose();
                     a.onSelect();
                   }}
-                  className={`hairline h-[57px] w-full border-t text-[20px] active:bg-[rgb(var(--fill)/0.16)] ${a.destructive ? 'text-danger' : 'text-accent'}`}
+                  className={`hairline h-[57px] w-full border-t text-[20px] active:bg-[rgb(var(--fill)/0.16)] ${a.destructive ? 'text-danger-text' : 'text-accent'}`}
                 >
                   {a.label}
                 </button>

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useDragControls, type PanInfo } from 'framer-motion';
-import { useRef, type ReactNode } from 'react';
+import { Suspense, useRef, type ReactNode } from 'react';
 import { useLocation, useNavigate, useRoutes, type RouteObject } from 'react-router-dom';
 import { pageSpring } from './motion';
 
@@ -70,7 +70,7 @@ function StackPage({ dir, canSwipeBack, children }: { dir: Dir; canSwipeBack: bo
       dragElastic={{ left: 0, right: 1 }}
       onDragEnd={onDragEnd}
     >
-      {children}
+      <Suspense fallback={null}>{children}</Suspense>
       {canSwipeBack && <div className="absolute inset-y-0 left-0 z-30 w-5 touch-none" onPointerDown={(e) => drag.start(e)} aria-hidden />}
     </motion.div>
   );

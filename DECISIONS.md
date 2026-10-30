@@ -66,3 +66,19 @@ Judgment calls made while building, newest at the bottom of each phase.
 - **Goal Planner**: goal → up to 3 clarifying questions (chips + free text) → plan. Reused habits are validated against real ids; at most 3 *new* habits can be accepted. New sections are created by name when the plan suggests one that doesn't exist.
 - **Goal pace and check-ins**: goal progress is current ÷ target (or milestones done); "Am I on track?" sends the goal plus linked habits' 14/30-day consistency and returns one adjustment.
 - **Default model**: `gemini-flash-lite-latest` (verified working; replies in 1–4 s in testing).
+
+## Phase 6 — Polish
+
+- **Onboarding** is three screens (what it is → pick sections from 5 presets → tick starter habits, or "Start from a goal with AI", which opens the planner). It only shows on a true first run (no settings and no habits), so returning users never see it flash. An "Explore with demo data" link skips straight to a full app.
+- **Install first**: in iOS Safari the install guide opens over onboarding, with a note that the Home Screen app keeps its data separate from Safari.
+- **Daily check-in** (mood, energy, one line) appears on Home after 5 pm or once everything is done, and on any past day you open from the date strip. It saves as you tap.
+- **Celebration** fires once per day when every habit due today is done: a soft glow and short confetti (glow only with Reduce Motion). Rows bounce gently when completed.
+- **Backup reminder** on Home every 30 days (from your first habit, or last export), snoozable for 7 days. Backups are JSON files shared via the iOS share sheet (Save to Files); import validates the file and replaces the device's data after confirmation.
+- **Dynamic Type**: iOS reports the preferred text size through `-apple-system-body`; the app measures it and scales typography through `--type-scale` (capped at 150%) while spacing stays on the 8-pt grid.
+- **Contrast**: Apple's default secondary grey and system blue fall slightly below WCAG AA. Secondary text uses 74% instead of 60% opacity in light mode, and the accent is split into a text colour and a fill colour, each tuned at runtime to 4.5:1 for whichever accent the user picks. Numbers and labels always use text colours; habit colours stay on tiles, rings, dots and icons. axe reports no WCAG A/AA violations on any main screen in light or dark mode.
+- **Tap targets**: segmented controls and toggles extend their hit areas to 44 pt with invisible padding, keeping the iOS visual size.
+- **Tab bar** is a navigation list with `aria-current`, not ARIA tabs, since tabs change pages.
+- **Code splitting**: Home ships in the main bundle; every other screen, the validation library and the backup code load on first use. Lighthouse (mobile): Performance 95–96, Accessibility 100, Best Practices 100. Lighthouse 12 no longer has a PWA category; installability comes from the manifest (192/512 + maskable icons, standalone display) and the service worker.
+- **Share cards** were built in Phase 3, and export/import and the accent colour in Phase 5, next to the screens that use them.
+- **"App icon accent color"**: iOS doesn't let web apps change their Home Screen icon after install, so this setting changes the in-app accent (buttons, links, selection) instead.
+- **Reminders** (`reminderTime`) are stored but not delivered: iOS web push needs a push server, which conflicts with "no cloud backend" in v1.

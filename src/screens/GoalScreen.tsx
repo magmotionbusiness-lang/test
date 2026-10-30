@@ -246,7 +246,7 @@ export function GoalScreen() {
                 <div className="mb-1 flex items-center justify-between">
                   <span className="text-footnote text-secondary">Check-in · {formatDay(lastCheckin!.updatedAt.slice(0, 10), 'd MMM')}</span>
                   <span
-                    className={`rounded-full px-2 py-0.5 text-caption font-semibold ${lastResult.data.status === 'behind' ? 'bg-danger/15 text-danger' : 'bg-success/15 text-success'}`}
+                    className={`rounded-full px-2 py-0.5 text-caption font-semibold ${lastResult.data.status === 'behind' ? 'bg-danger/15 text-danger-text' : 'bg-success/15 text-success-text'}`}
                   >
                     {lastResult.data.status === 'behind' ? 'Behind' : lastResult.data.status === 'ahead' ? 'Ahead' : 'On track'}
                   </span>

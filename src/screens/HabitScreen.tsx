@@ -223,9 +223,7 @@ export function HabitScreen() {
           </div>
         </div>
         <div className="flex items-baseline gap-2">
-          <span className="tabular text-[40px] font-bold leading-none" style={{ color }}>
-            {cons.score === null ? '—' : formatPercent(cons.score)}
-          </span>
+          <span className="tabular text-[40px] font-bold leading-none">{cons.score === null ? '—' : formatPercent(cons.score)}</span>
           <span className="text-subhead text-secondary">
             {cons.expected > 0 ? `${formatNumber(cons.earned)} of ${formatNumber(cons.expected)} expected` : 'Nothing expected yet'}
           </span>
@@ -357,7 +355,12 @@ function HistoryRow({
     <button onClick={onClick} className="flex w-full gap-3 px-4 py-2.5 text-left active:bg-[rgb(var(--fill)/0.16)]">
       <span className="tabular w-14 shrink-0 pt-0.5 text-footnote text-secondary">{formatDay(entry.date, 'd MMM')}</span>
       <span className="min-w-0 flex-1">
-        <span className="block text-body" style={{ color: entry.status === 'done' || entry.status === 'minimum' ? color : undefined }}>
+        <span className="flex items-center gap-2 text-body">
+          <span
+            className="inline-block h-2.5 w-2.5 shrink-0 rounded-[3px]"
+            style={{ background: entry.status === 'done' || entry.status === 'minimum' ? color : 'rgb(var(--fill) / 0.3)' }}
+            aria-hidden
+          />
           {entry.freeze ? '🧊 Streak freeze' : STATUS[entry.status]}
           {quantity && entry.value > 0 && entry.status !== 'skipped' ? ` · ${entry.value} ${unit}` : ''}
         </span>

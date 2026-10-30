@@ -35,7 +35,7 @@ export function ListRow({ icon, title, subtitle, detail, onClick, chevron, destr
     <>
       {icon && <span className="flex h-[29px] w-[29px] shrink-0 items-center justify-center">{icon}</span>}
       <span className="min-w-0 flex-1 text-left">
-        <span className={`block truncate text-body ${destructive ? 'text-danger' : ''}`}>{title}</span>
+        <span className={`block truncate text-body ${destructive ? 'text-danger-text' : ''}`}>{title}</span>
         {subtitle && <span className="block truncate text-footnote text-secondary">{subtitle}</span>}
       </span>
       {detail !== undefined && <span className="shrink-0 text-body text-secondary">{detail}</span>}
@@ -60,7 +60,7 @@ export function Toggle({ checked, onChange, label }: { checked: boolean; onChang
       aria-checked={checked}
       aria-label={label}
       onClick={() => onChange(!checked)}
-      className={`relative h-[31px] w-[51px] shrink-0 rounded-full transition-colors duration-200 ${
+      className={`relative h-[31px] w-[51px] shrink-0 rounded-full transition-colors duration-200 before:absolute before:-inset-[7px] ${
         checked ? 'bg-success' : 'bg-[rgb(var(--fill)/0.32)]'
       }`}
     >
@@ -91,7 +91,7 @@ export function Segmented<T extends string>({ value, options, onChange, label }:
             role="radio"
             aria-checked={active}
             onClick={() => onChange(o.value)}
-            className="relative z-10 h-[30px] flex-1 px-2 text-footnote font-medium"
+            className="relative z-10 h-[30px] flex-1 px-2 text-footnote font-medium before:absolute before:-inset-y-[7px] before:inset-x-0"
           >
             {active && (
               <motion.span
@@ -165,7 +165,7 @@ export function PrimaryButton({ children, onClick, disabled }: { children: React
       transition={spring}
       onClick={onClick}
       disabled={disabled}
-      className="h-[50px] rounded-[14px] bg-accent px-6 text-headline text-white disabled:opacity-40"
+      className="h-[50px] rounded-[14px] bg-accent-fill px-6 text-headline text-white disabled:opacity-40"
     >
       {children}
     </motion.button>

@@ -141,7 +141,7 @@ export function BarChart({
                   fillOpacity={active === null || active === i ? 1 : 0.45}
                 />
                 {isExtreme && (
-                  <text x={x(i)} y={y0 - 4} textAnchor="middle" className="fill-[rgb(var(--label-2)/0.6)] text-[10px] tabular">
+                  <text x={x(i)} y={y0 - 4} textAnchor="middle" className="fill-[rgb(var(--label-2)/var(--label-2-alpha))] text-[10px] tabular">
                     {format(d.value)}
                   </text>
                 )}
@@ -163,7 +163,12 @@ function Grid({ width, top, y, format }: { width: number; top: number; y: (v: nu
       {[0, 0.5, 1].map((f) => (
         <g key={f}>
           <line x1={PAD.left} x2={width - PAD.right} y1={y(top * f)} y2={y(top * f)} stroke="rgb(var(--separator) / 0.22)" strokeWidth={1} />
-          <text x={PAD.left - 6} y={y(top * f) + 3.5} textAnchor="end" className="fill-[rgb(var(--label-2)/0.6)] text-[10px] tabular">
+          <text
+            x={PAD.left - 6}
+            y={y(top * f) + 3.5}
+            textAnchor="end"
+            className="fill-[rgb(var(--label-2)/var(--label-2-alpha))] text-[10px] tabular"
+          >
             {format(top * f)}
           </text>
         </g>
@@ -183,7 +188,7 @@ function Ticks({ data, x, height, every }: { data: Point[]; x: (i: number) => nu
             x={x(i)}
             y={height - 6}
             textAnchor={every === undefined && i === 0 ? 'start' : every === undefined && i === data.length - 1 ? 'end' : 'middle'}
-            className="fill-[rgb(var(--label-2)/0.6)] text-[10px]"
+            className="fill-[rgb(var(--label-2)/var(--label-2-alpha))] text-[10px]"
           >
             {d.tick ?? d.label}
           </text>

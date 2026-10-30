@@ -118,7 +118,7 @@ export function WeekdayPicker({ value, onChange, weekStart }: { value: Weekday[]
             aria-pressed={on}
             aria-label={DAY_NAMES[d]}
             onClick={() => onChange(on ? value.filter((x) => x !== d) : [...value, d].sort())}
-            className={`h-10 w-10 rounded-full text-subhead font-semibold transition-colors ${on ? 'bg-accent text-white' : 'bg-[rgb(var(--fill)/0.12)]'}`}
+            className={`h-10 w-10 rounded-full text-subhead font-semibold transition-colors ${on ? 'bg-accent-fill text-white' : 'bg-[rgb(var(--fill)/0.12)]'}`}
           >
             {DAY_LETTERS[d]}
           </button>

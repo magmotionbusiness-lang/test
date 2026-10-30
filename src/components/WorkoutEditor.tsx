@@ -27,7 +27,7 @@ export function WorkoutEditor({ value, onChange, suggestions }: Props) {
             />
             <button
               onClick={() => onChange(value.filter((_, j) => j !== i))}
-              className="flex h-11 w-11 items-center justify-center text-danger"
+              className="flex h-11 w-11 items-center justify-center text-danger-text"
               aria-label={`Remove ${ex.name || 'exercise'}`}
             >
               <Trash2 size={18} aria-hidden />
@@ -77,7 +77,7 @@ export function WorkoutEditor({ value, onChange, suggestions }: Props) {
         ))}
         <button
           onClick={() => onChange([...value, { name: '', sets: [{ reps: 8, weight: 20 }] }])}
-          className="h-9 rounded-full bg-accent px-3 text-subhead font-medium text-white"
+          className="h-9 rounded-full bg-accent-fill px-3 text-subhead font-medium text-white"
         >
           + Exercise
         </button>

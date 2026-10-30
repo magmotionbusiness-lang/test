@@ -37,7 +37,9 @@ export function InstallGuide({ open, onClose }: { open: boolean; onClose: () => 
           </li>
         ))}
       </ol>
-      <p className="mt-4 px-2 text-center text-footnote text-secondary">On iPad, the Share button is in the top-right of Safari.</p>
+      <p className="mt-4 px-2 text-center text-footnote text-secondary">
+        On iPad, the Share button is in the top-right of Safari. Install first: iOS keeps the Home Screen app’s data separate from Safari’s.
+      </p>
     </Sheet>
   );
 }

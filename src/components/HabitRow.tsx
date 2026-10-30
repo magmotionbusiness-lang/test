@@ -1,10 +1,9 @@
-import { animate, motion, useMotionValue, useTransform, type PanInfo } from 'framer-motion';
+import { animate, motion, useAnimationControls, useMotionValue, useTransform, type PanInfo } from 'framer-motion';
 import { Check, Ellipsis, Flame, SkipForward } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Entry, Habit } from '@/db/types';
 import type { Streak } from '@/domain/streaks';
 import { formatStreak } from '@/domain/streaks';
-import { colorVar } from '@/lib/colors';
 import { CheckControl } from './CheckControl';
 
 interface Props {
@@ -35,6 +34,14 @@ export function HabitRow({ habit, entry, sectionColor, streak, onTap, onLongPres
   const completeOpacity = useTransform(x, [0, COMPLETE_THRESHOLD], [0, 1]);
   const completeScale = useTransform(x, [0, COMPLETE_THRESHOLD], [0.6, 1]);
   const done = entry?.status === 'done' || entry?.status === 'minimum';
+  const bounce = useAnimationControls();
+  const wasDone = useRef(done);
+
+  // A subtle bounce when the row becomes done.
+  useEffect(() => {
+    if (done && !wasDone.current) void bounce.start({ scale: [1, 1.018, 1], transition: { duration: 0.35, ease: 'easeOut' } });
+    wasDone.current = done;
+  }, [done, bounce]);
 
   const settle = (to: number) => {
     void animate(x, to, { type: 'spring', stiffness: 400, damping: 30 });
@@ -59,7 +66,7 @@ export function HabitRow({ habit, entry, sectionColor, streak, onTap, onLongPres
         : habit.cue;
 
   return (
-    <div className="relative overflow-hidden">
+    <motion.div animate={bounce} className="relative overflow-hidden">
       {/* Swipe-right background: complete */}
       <div className="absolute inset-0 flex items-center bg-success pl-5" aria-hidden>
         <motion.span style={{ opacity: completeOpacity, scale: completeScale }} className="flex items-center gap-2 font-semibold text-white">
@@ -85,7 +92,7 @@ export function HabitRow({ habit, entry, sectionColor, streak, onTap, onLongPres
             settle(0);
             onMore();
           }}
-          className="flex flex-1 flex-col items-center justify-center gap-0.5 bg-accent text-caption font-medium text-white"
+          className="flex flex-1 flex-col items-center justify-center gap-0.5 bg-accent-fill text-caption font-medium text-white"
         >
           <Ellipsis size={20} aria-hidden />
           More
@@ -125,17 +132,16 @@ export function HabitRow({ habit, entry, sectionColor, streak, onTap, onLongPres
           </span>
           {streak && streak.current > 0 && (
             <span
-              className="tabular flex shrink-0 items-center gap-0.5 text-footnote font-medium"
-              style={{ color: colorVar('orange') }}
+              className="tabular flex shrink-0 items-center gap-0.5 text-footnote font-medium text-secondary"
               aria-label={`Streak ${streak.current} ${streak.unit}s`}
             >
-              <Flame size={14} strokeWidth={2.2} aria-hidden />
+              <Flame size={14} strokeWidth={2.2} className="text-[var(--c-orange)]" aria-hidden />
               {formatStreak(streak)}
             </span>
           )}
         </button>
         <CheckControl habit={habit} entry={entry} onTap={() => !dragged.current && onTap()} onLongPress={onLongPress} />
       </motion.div>
-    </div>
+    </motion.div>
   );
 }
