@@ -53,3 +53,16 @@ Judgment calls made while building, newest at the bottom of each phase.
 - **Freeze offer on Home**: when yesterday was a scheduled, unlogged day that ended a streak of 3+, Home offers a freeze (while any are left). "Not now" is remembered per device for that day.
 - **Gym extras** appear on sections marked *Gym*: weekly volume (Σ sets × reps × kg), personal records by heaviest set with an Epley 1RM estimate, and recent workouts.
 - **Prettier** added (`npm run format`) so formatting stays consistent.
+
+## Phase 5 — AI
+
+- **Prompts are built on the server** (`api/ai.ts` imports `src/ai/prompts.ts`); the browser sends only a task name and structured data. Nobody can use the deployed endpoint as a free general-purpose Gemini proxy.
+- **One schema file** (`src/ai/schemas.ts`, Zod) is shared by the client and the function: requests are validated on the server, replies are validated on both sides. On an invalid reply the server retries once with a repair prompt; the client then shows a calm error card with Retry. (Observed in testing: one plan reply came back malformed and the retry fixed it.)
+- **Guardrails**: 30 KB body cap (checked on both sides), 25 s Gemini timeout (40 s client), JSON response mode, `maxOutputTokens` 4096, per-device daily limit (default 20, Settings) counted only for requests that reach the server, plus a best-effort per-IP cap of 100/day on the server.
+- **Caching**: every result is stored in `aiReviews` keyed by a SHA-256 of task + payload. Opening the same review again shows the cached one with its timestamp; *Refresh* re-asks. Logging something changes the payload, so a new review is generated only when there's something new to say.
+- **Privacy**: payloads contain aggregates (counts, percentages, streaks, best/worst weekday) and names of habits, sections and goals. Note text is sent only with *Include my notes* on. *Settings → What gets sent* shows the exact JSON for a real "This week" review.
+- **Review period comparison**: every review compares with the immediately preceding period of the same length (e.g. Mon–Fri vs the 5 days before).
+- **Section reviews** reuse the review task with a section filter ("Review this section with AI" opens Insights pre-filtered).
+- **Goal Planner**: goal → up to 3 clarifying questions (chips + free text) → plan. Reused habits are validated against real ids; at most 3 *new* habits can be accepted. New sections are created by name when the plan suggests one that doesn't exist.
+- **Goal pace and check-ins**: goal progress is current ÷ target (or milestones done); "Am I on track?" sends the goal plus linked habits' 14/30-day consistency and returns one adjustment.
+- **Default model**: `gemini-flash-lite-latest` (verified working; replies in 1–4 s in testing).

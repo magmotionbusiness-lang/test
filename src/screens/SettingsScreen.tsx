@@ -1,26 +1,45 @@
-import { useState } from 'react';
-import { Database, Download, Moon, Sparkles, Trash2 } from 'lucide-react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { Bot, Database, Download, Eye, FileDown, FileUp, Moon, Palette, Sparkles, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { aiUsage } from '@/ai/client';
 import { useSettings } from '@/app/useSettings';
-import { Page } from '@/components/Page';
-import { InstallGuide } from '@/components/InstallGuide';
-import { IconTile, ListGroup, ListRow, Segmented } from '@/components/ui';
+import { db } from '@/db/db';
+import { backupFileName, exportBackup, importBackup, parseBackup, saveFile } from '@/db/backup';
 import { loadDemoData } from '@/db/demo';
 import { eraseAll, hasAnyData, updateSettings } from '@/db/repo';
 import type { ThemePref } from '@/db/types';
+import { ColorPicker, FieldRow, Stepper } from '@/components/form';
+import { InstallGuide } from '@/components/InstallGuide';
+import { Page } from '@/components/Page';
+import { Sheet } from '@/components/Sheet';
+import { toast } from '@/components/Toast';
+import { IconTile, ListGroup, ListRow, Segmented, Toggle } from '@/components/ui';
+import { buildReviewPayload } from '@/domain/aggregate';
+import { formatDay, shiftDate, today as todayFn, weekStartOf } from '@/domain/dates';
 
 export function SettingsScreen() {
   const settings = useSettings();
+  const location = useLocation();
   const [installOpen, setInstallOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const usage = useLiveQuery(() => aiUsage(), [settings.aiCallsToday, settings.aiCallsDate, settings.aiDailyLimit]);
+
+  useEffect(() => {
+    if ((location.state as { focus?: string } | null)?.focus === 'ai') setPreviewOpen(true);
+  }, [location.state]);
 
   const onLoadDemo = async () => {
     if ((await hasAnyData()) && !window.confirm('Replace everything on this device with demo data? Your current habits and history will be erased.'))
       return;
-    setBusy(true);
+    setBusy('demo');
     try {
       await loadDemoData();
+      toast('Demo data loaded');
     } finally {
-      setBusy(false);
+      setBusy(null);
     }
   };
 
@@ -28,7 +47,42 @@ export function SettingsScreen() {
     if (!window.confirm('Erase all data on this device? This can’t be undone.')) return;
     if (!window.confirm('Are you absolutely sure? Every habit, entry, goal and note will be deleted.')) return;
     await eraseAll();
+    toast('All data erased');
   };
+
+  const onExport = async () => {
+    setBusy('export');
+    try {
+      await saveFile(await exportBackup(), backupFileName());
+      toast('Backup saved');
+    } catch {
+      /* cancelled from the share sheet */
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const onImportFile = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      const backup = parseBackup(await file.text());
+      const n = backup.data.habits.length;
+      if (
+        !window.confirm(
+          `Replace everything on this device with this backup from ${formatDay(backup.exportedAt.slice(0, 10), 'd MMM yyyy')} (${n} habits)?`,
+        )
+      )
+        return;
+      const s = await importBackup(backup);
+      toast(`Imported ${s.habits} habits and ${s.entries} entries`);
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : 'Import failed.');
+    } finally {
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+
+  const backupAge = settings.lastBackupAt ? Math.floor((Date.now() - Date.parse(settings.lastBackupAt)) / 86_400_000) : null;
 
   return (
     <Page title="Settings">
@@ -63,16 +117,93 @@ export function SettingsScreen() {
             ]}
           />
         </div>
+        <div className="pt-3">
+          <div className="flex items-center gap-3 px-4">
+            <IconTile color="#FF2D55">
+              <Palette size={17} aria-hidden />
+            </IconTile>
+            <span className="text-body">Accent color</span>
+          </div>
+          <ColorPicker value={settings.accent} onChange={(accent) => updateSettings({ accent })} />
+        </div>
       </ListGroup>
 
-      <ListGroup header="Data" footer="Everything is stored only on this device. Demo data adds 6 months of history across 4 sections and 12 habits.">
+      <ListGroup
+        header="AI coach"
+        footer="Reviews and plans are written by Google Gemini. Only summaries are sent — never your raw history — and nothing is stored by the app’s server."
+      >
+        <FieldRow label="Daily limit">
+          <Stepper
+            label="daily AI limit"
+            value={settings.aiDailyLimit}
+            min={1}
+            max={100}
+            onChange={(aiDailyLimit) => updateSettings({ aiDailyLimit })}
+          />
+        </FieldRow>
+        <ListRow
+          icon={
+            <IconTile color="#AF52DE">
+              <Bot size={17} aria-hidden />
+            </IconTile>
+          }
+          title="Used today"
+          detail={usage ? `${usage.used} of ${usage.limit}` : ''}
+        />
+        <FieldRow label="Include my notes in AI reviews">
+          <Toggle
+            checked={settings.includeNotesInAI}
+            onChange={(includeNotesInAI) => updateSettings({ includeNotesInAI })}
+            label="Include my notes in AI reviews"
+          />
+        </FieldRow>
+        <ListRow
+          icon={
+            <IconTile color="#5856D6">
+              <Eye size={17} aria-hidden />
+            </IconTile>
+          }
+          title="What gets sent"
+          chevron
+          onClick={() => setPreviewOpen(true)}
+        />
+      </ListGroup>
+
+      <ListGroup
+        header="Data"
+        footer={
+          <>
+            Everything lives only on this device. iOS can clear website data that isn’t used for a while, so export a backup now and then
+            {backupAge !== null ? ` — last backup ${backupAge === 0 ? 'today' : `${backupAge} days ago`}` : ' — no backup yet'}.
+          </>
+        }
+      >
+        <ListRow
+          icon={
+            <IconTile color="#34C759">
+              <FileDown size={17} aria-hidden />
+            </IconTile>
+          }
+          title={busy === 'export' ? 'Preparing backup…' : 'Export backup'}
+          onClick={busy ? undefined : onExport}
+        />
+        <ListRow
+          icon={
+            <IconTile color="#30B0C7">
+              <FileUp size={17} aria-hidden />
+            </IconTile>
+          }
+          title="Import backup"
+          onClick={() => fileRef.current?.click()}
+        />
         <ListRow
           icon={
             <IconTile color="#FF9500">
               <Sparkles size={17} aria-hidden />
             </IconTile>
           }
-          title={busy ? 'Loading demo data…' : 'Load demo data'}
+          title={busy === 'demo' ? 'Loading demo data…' : 'Load demo data'}
+          subtitle="6 months, 4 sections, 12 habits"
           onClick={busy ? undefined : onLoadDemo}
         />
         <ListRow
@@ -86,6 +217,15 @@ export function SettingsScreen() {
           onClick={onErase}
         />
       </ListGroup>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="application/json,.json"
+        className="hidden"
+        onChange={(e) => onImportFile(e.target.files?.[0])}
+        aria-hidden
+        tabIndex={-1}
+      />
 
       <ListGroup header="About">
         <ListRow
@@ -110,6 +250,60 @@ export function SettingsScreen() {
       </ListGroup>
 
       <InstallGuide open={installOpen} onClose={() => setInstallOpen(false)} />
+      <PayloadPreview open={previewOpen} onClose={() => setPreviewOpen(false)} />
     </Page>
+  );
+}
+
+/** Shows the exact JSON a "This week" review would send right now. */
+function PayloadPreview({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const settings = useSettings();
+  const today = todayFn();
+  const payload = useLiveQuery(async () => {
+    if (!open) return null;
+    const from = weekStartOf(today, settings.weekStart);
+    const [habits, sections, entries, notes, goals] = await Promise.all([
+      db.habits.toArray(),
+      db.sections.toArray(),
+      db.entries.where('date').between(shiftDate(from, -430), today, true, true).toArray(),
+      db.dailyNotes.where('date').between(from, today, true, true).toArray(),
+      db.goals.toArray(),
+    ]);
+    if (!habits.length) return null;
+    return buildReviewPayload({
+      habits,
+      sections,
+      entries,
+      notes,
+      goals,
+      from,
+      to: today,
+      today,
+      weekStart: settings.weekStart,
+      includeNotes: settings.includeNotesInAI,
+      label: 'This week',
+    });
+  }, [open, today, settings.weekStart, settings.includeNotesInAI]);
+
+  const text = payload ? JSON.stringify({ task: 'review', payload }, null, 2) : null;
+
+  return (
+    <Sheet open={open} onClose={onClose} title="What gets sent">
+      <p className="mb-3 text-subhead text-secondary">
+        This is exactly what a “This week” review would send right now: summaries per habit, section and goal. Note text is{' '}
+        {settings.includeNotesInAI ? 'included because you turned it on' : 'not included'}. Names of habits and goals are sent so the coach can refer
+        to them.
+      </p>
+      {text ? (
+        <>
+          <p className="mb-2 text-footnote text-secondary">{(new Blob([text]).size / 1024).toFixed(1)} KB · limit 30 KB</p>
+          <pre className="max-h-[55dvh] overflow-auto whitespace-pre-wrap break-words rounded-row bg-bg-2 p-3 font-mono text-[11px] leading-[15px]">
+            {text}
+          </pre>
+        </>
+      ) : (
+        <p className="rounded-row bg-bg-2 p-4 text-subhead text-secondary">Add a habit to see a real example.</p>
+      )}
+    </Sheet>
   );
 }

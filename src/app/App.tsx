@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Stack } from './Stack';
-import { useApplyTheme } from './theme';
+import { useApplyAccent, useApplyTheme } from './theme';
 import { useSettings } from './useSettings';
 import { TabBar } from '@/components/TabBar';
 import { ToastHost } from '@/components/Toast';
@@ -14,6 +14,7 @@ import { InsightsScreen } from '@/screens/InsightsScreen';
 import { SettingsScreen } from '@/screens/SettingsScreen';
 import { SectionScreen } from '@/screens/SectionScreen';
 import { HabitScreen } from '@/screens/HabitScreen';
+import { GoalScreen } from '@/screens/GoalScreen';
 
 const ROUTES = [
   { path: '/', element: <HomeScreen /> },
@@ -21,6 +22,7 @@ const ROUTES = [
   { path: '/sections/:id', element: <SectionScreen /> },
   { path: '/habits/:id', element: <HabitScreen /> },
   { path: '/goals', element: <GoalsScreen /> },
+  { path: '/goals/:id', element: <GoalScreen /> },
   { path: '/insights', element: <InsightsScreen /> },
   { path: '/settings', element: <SettingsScreen /> },
   { path: '*', element: <HomeScreen /> },
@@ -29,6 +31,7 @@ const ROUTES = [
 export function App() {
   const settings = useSettings();
   useApplyTheme(settings.theme);
+  useApplyAccent(settings.accent);
   const [installOpen, setInstallOpen] = useState(false);
 
   // First launch in Safari (not yet installed): show the install guide once.

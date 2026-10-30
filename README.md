@@ -46,6 +46,7 @@ Code layout:
 - `src/components/` — reusable iOS-style UI (pages, lists, sheets, toggles, rings).
 - `src/screens/` — one file per screen.
 - `src/ai/prompts.ts` — all AI prompt templates.
-- `api/` — Vercel serverless functions (the Gemini proxy).
+- `src/ai/` — prompt templates (`prompts.ts`), request/response schemas (`schemas.ts`) and the client with limits and caching.
+- `api/ai.ts` — the Vercel serverless function that calls Gemini. Prompts are built here from structured data; the key never reaches the browser.
 
 To see every screen with realistic data: **Settings → Load demo data**.

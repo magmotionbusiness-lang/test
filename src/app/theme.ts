@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { ThemePref } from '@/db/types';
+import type { HabitColor, ThemePref } from '@/db/types';
+import { colorHex } from '@/lib/colors';
 
 const media = typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
@@ -40,4 +41,14 @@ export function useIsDark(): boolean {
     return () => obs.disconnect();
   }, []);
   return dark;
+}
+
+/** Sets the app-wide accent (`--accent`) from the palette, per theme. */
+export function useApplyAccent(accent: HabitColor): void {
+  const dark = useIsDark();
+  useEffect(() => {
+    const hex = colorHex(accent, dark).slice(1);
+    const rgb = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(' ');
+    document.documentElement.style.setProperty('--accent', rgb);
+  }, [accent, dark]);
 }
