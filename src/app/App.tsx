@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Stack } from './Stack';
 import { useApplyTheme } from './theme';
 import { useSettings } from './useSettings';
 import { TabBar } from '@/components/TabBar';
+import { ToastHost } from '@/components/Toast';
 import { InstallGuide, isIosSafari } from '@/components/InstallGuide';
 import { updateSettings } from '@/db/repo';
 import { db } from '@/db/db';
@@ -11,6 +12,19 @@ import { SectionsScreen } from '@/screens/SectionsScreen';
 import { GoalsScreen } from '@/screens/GoalsScreen';
 import { InsightsScreen } from '@/screens/InsightsScreen';
 import { SettingsScreen } from '@/screens/SettingsScreen';
+import { SectionScreen } from '@/screens/SectionScreen';
+import { HabitScreen } from '@/screens/HabitScreen';
+
+const ROUTES = [
+  { path: '/', element: <HomeScreen /> },
+  { path: '/sections', element: <SectionsScreen /> },
+  { path: '/sections/:id', element: <SectionScreen /> },
+  { path: '/habits/:id', element: <HabitScreen /> },
+  { path: '/goals', element: <GoalsScreen /> },
+  { path: '/insights', element: <InsightsScreen /> },
+  { path: '/settings', element: <SettingsScreen /> },
+  { path: '*', element: <HomeScreen /> },
+];
 
 export function App() {
   const settings = useSettings();
@@ -36,16 +50,10 @@ export function App() {
   return (
     <div className="relative h-full overflow-hidden">
       <main className="absolute inset-0">
-        <Routes>
-          <Route path="/" element={<HomeScreen />} />
-          <Route path="/sections" element={<SectionsScreen />} />
-          <Route path="/goals" element={<GoalsScreen />} />
-          <Route path="/insights" element={<InsightsScreen />} />
-          <Route path="/settings" element={<SettingsScreen />} />
-          <Route path="*" element={<HomeScreen />} />
-        </Routes>
+        <Stack routes={ROUTES} />
       </main>
       <TabBar />
+      <ToastHost />
       <InstallGuide open={installOpen} onClose={closeInstall} />
     </div>
   );

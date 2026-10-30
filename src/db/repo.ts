@@ -119,3 +119,36 @@ export async function eraseAll(): Promise<void> {
 export async function hasAnyData(): Promise<boolean> {
   return (await db.habits.count()) > 0;
 }
+
+/** Puts a day back exactly as it was (used by Undo). */
+export async function restoreEntry(habitId: string, date: LocalDate, previous: Entry | undefined): Promise<void> {
+  if (previous) await db.entries.put(previous);
+  else await deleteEntry(habitId, date);
+}
+
+export async function deleteHabit(id: string): Promise<void> {
+  await db.transaction('rw', db.habits, db.entries, async () => {
+    await db.entries.where('habitId').equals(id).delete();
+    await db.habits.delete(id);
+  });
+}
+
+export async function deleteSection(id: string): Promise<void> {
+  const habits = await db.habits.where('sectionId').equals(id).toArray();
+  for (const h of habits) await deleteHabit(h.id);
+  await db.sections.delete(id);
+}
+
+/** Persists a new order for sections or habits after a drag reorder. */
+export async function reorder(table: 'sections' | 'habits', ids: string[]): Promise<void> {
+  const now = nowIso();
+  const t = db.table<{ id: string; order: number; updatedAt: string }, string>(table);
+  await db.transaction('rw', t, async () => {
+    await Promise.all(ids.map((id, order) => t.update(id, { order, updatedAt: now })));
+  });
+}
+
+export async function nextOrder(table: 'sections' | 'habits', sectionId?: string): Promise<number> {
+  const rows = sectionId ? await db.habits.where('sectionId').equals(sectionId).toArray() : await db[table].toArray();
+  return rows.reduce((m, r) => Math.max(m, r.order + 1), 0);
+}
