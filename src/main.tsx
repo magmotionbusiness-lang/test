@@ -1,8 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
-import { registerSW } from 'virtual:pwa-register';
 import { App } from './app/App';
 import { paletteCss } from './lib/colors';
 import './styles/index.css';
@@ -31,14 +30,17 @@ document.addEventListener('visibilitychange', () => document.visibilityState ===
 // Ask iOS/Safari not to evict our IndexedDB under storage pressure.
 void navigator.storage?.persist?.().catch(() => undefined);
 
-registerSW({ immediate: true });
+// The claude.ai preview build has no service worker and routes in memory.
+const preview = import.meta.env.VITE_PREVIEW === 'true';
+if (!preview) void import('virtual:pwa-register').then(({ registerSW }) => registerSW({ immediate: true }));
+const Router = preview ? MemoryRouter : BrowserRouter;
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MotionConfig reducedMotion="user">
-      <BrowserRouter>
+      <Router>
         <App />
-      </BrowserRouter>
+      </Router>
     </MotionConfig>
   </StrictMode>,
 );

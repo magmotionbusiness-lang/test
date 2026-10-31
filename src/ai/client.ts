@@ -33,6 +33,11 @@ export async function aiUsage(): Promise<{ used: number; limit: number }> {
  * limit, size cap, timeout and schema validation of the reply.
  */
 export async function callAI<T extends AITask>(task: T, payload: unknown): Promise<AIResult<T>> {
+  if (import.meta.env.VITE_PREVIEW === 'true')
+    throw new AIError(
+      'The AI coach runs on the deployed app (Vercel). This preview has no server, so everything else works but AI doesn’t.',
+      'failed',
+    );
   if (!navigator.onLine) throw new AIError('You’re offline. AI features need a connection — everything else works offline.', 'offline');
   const { used, limit } = await aiUsage();
   if (used >= limit) throw new AIError(`You’ve used today’s ${limit} AI requests. The limit resets tomorrow, or raise it in Settings.`, 'limit');

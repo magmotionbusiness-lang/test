@@ -51,7 +51,7 @@ export function App() {
   useEffect(() => {
     let cancelled = false;
     void db.settings.get('settings').then((s) => {
-      if (!cancelled && !s?.installGuideSeen && isIosSafari()) setInstallOpen(true);
+      if (!cancelled && !s?.installGuideSeen && isIosSafari() && import.meta.env.VITE_PREVIEW !== 'true') setInstallOpen(true);
     });
     return () => {
       cancelled = true;

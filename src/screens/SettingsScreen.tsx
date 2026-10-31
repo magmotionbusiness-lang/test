@@ -1,3 +1,4 @@
+import { confirmAction } from '@/lib/confirm';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Bot, Database, Download, Eye, FileDown, FileUp, Moon, Palette, Sparkles, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -32,7 +33,7 @@ export function SettingsScreen() {
   }, [location.state]);
 
   const onLoadDemo = async () => {
-    if ((await hasAnyData()) && !window.confirm('Replace everything on this device with demo data? Your current habits and history will be erased.'))
+    if ((await hasAnyData()) && !confirmAction('Replace everything on this device with demo data? Your current habits and history will be erased.'))
       return;
     setBusy('demo');
     try {
@@ -44,8 +45,8 @@ export function SettingsScreen() {
   };
 
   const onErase = async () => {
-    if (!window.confirm('Erase all data on this device? This can’t be undone.')) return;
-    if (!window.confirm('Are you absolutely sure? Every habit, entry, goal and note will be deleted.')) return;
+    if (!confirmAction('Erase all data on this device? This can’t be undone.')) return;
+    if (!confirmAction('Are you absolutely sure? Every habit, entry, goal and note will be deleted.')) return;
     await eraseAll();
     toast('All data erased');
   };
@@ -68,7 +69,7 @@ export function SettingsScreen() {
       const backup = parseBackup(await file.text());
       const n = backup.data.habits.length;
       if (
-        !window.confirm(
+        !confirmAction(
           `Replace everything on this device with this backup from ${formatDay(backup.exportedAt.slice(0, 10), 'd MMM yyyy')} (${n} habits)?`,
         )
       )

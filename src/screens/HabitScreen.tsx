@@ -1,3 +1,4 @@
+import { confirmAction } from '@/lib/confirm';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Share2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -102,7 +103,7 @@ export function HabitScreen() {
   };
 
   const onDelete = async () => {
-    if (!window.confirm(`Delete “${habit.name}” and its entire history? This can’t be undone.`)) return;
+    if (!confirmAction(`Delete “${habit.name}” and its entire history? This can’t be undone.`)) return;
     await deleteHabit(habit.id);
     navigate(-1);
   };

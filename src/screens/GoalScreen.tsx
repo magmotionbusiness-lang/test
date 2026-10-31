@@ -1,3 +1,4 @@
+import { confirmAction } from '@/lib/confirm';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Check, Ellipsis, Sparkles } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -109,7 +110,7 @@ export function GoalScreen() {
   };
 
   const onDelete = async () => {
-    if (!window.confirm(`Delete the goal “${goal.title}”? Its habits stay.`)) return;
+    if (!confirmAction(`Delete the goal “${goal.title}”? Its habits stay.`)) return;
     for (const hid of goal.habitIds) await setHabitGoalLink(hid, goal.id, false);
     await db.goals.delete(goal.id);
     navigate(-1);

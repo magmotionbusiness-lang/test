@@ -1,3 +1,4 @@
+import { confirmAction } from '@/lib/confirm';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ChevronRight, Ellipsis, Plus, Sparkles } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -88,7 +89,7 @@ export function SectionScreen() {
 
   const onDelete = async () => {
     if (!section) return;
-    if (!window.confirm(`Delete “${section.name}” and all ${data?.habits.length ?? 0} of its habits, including their history? This can’t be undone.`))
+    if (!confirmAction(`Delete “${section.name}” and all ${data?.habits.length ?? 0} of its habits, including their history? This can’t be undone.`))
       return;
     await deleteSection(section.id);
     navigate(-1);

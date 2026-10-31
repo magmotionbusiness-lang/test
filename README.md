@@ -52,6 +52,7 @@ npm test           # unit tests (Vitest)
 npm run build      # typecheck + production build
 npm run format     # Prettier
 npm run icons      # re-render icons and iOS splash screens (needs Playwright)
+npm run build:preview  # single-file preview (dist-preview/habit-hub.html) for a claude.ai page: no AI, no install
 ```
 
 Code layout:

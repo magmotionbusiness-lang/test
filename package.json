@@ -11,7 +11,8 @@
     "test": "vitest run",
     "icons": "node scripts/generate-icons.mjs",
     "format": "prettier --write .",
-    "lint": "prettier --check . && tsc -b"
+    "lint": "prettier --check . && tsc -b",
+    "build:preview": "tsc -b && vite build --mode artifact && node scripts/inline-preview.mjs"
   },
   "dependencies": {
     "date-fns": "3.6.0",

@@ -6,3 +6,4 @@ dev-dist
 .env.local
 *.log
 coverage
+dist-preview
