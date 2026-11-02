@@ -68,7 +68,7 @@ for (const [cw, ch, dpr, ipad] of DEVICES) {
       // Same matte + logo in both schemes; the in-app intro starts from exactly this frame.
       const icon = Math.round(Math.min(w, h) * 0.22);
       const wmW = Math.round(icon * 1.15);
-      const wmTop = Math.round(h / 2 + icon / 2 + icon * 0.3);
+      const wmTop = Math.round(h / 2 + icon / 2 + icon * 0.6);
       const html = `<div style="position:relative;width:${w}px;height:${h}px;background:${MATTE};display:flex;align-items:center;justify-content:center">${logoSvg(icon)}<img src="${WATERMARK}" style="position:absolute;left:${Math.round((w - wmW) / 2)}px;top:${wmTop}px;width:${wmW}px;height:${Math.round(wmW * WATERMARK_ASPECT)}px;opacity:0.9"></div>`;
       const file = `splash/${w}x${h}-${scheme}.png`;
       await render(html, w, h, file);

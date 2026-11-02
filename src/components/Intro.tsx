@@ -77,7 +77,7 @@ export function Intro() {
             src={createdBy}
             alt=""
             className="absolute left-1/2"
-            style={{ top: 'calc(50% + 17.6vmin)', width: '25.3vmin', x: '-50%', opacity: 0.9 }}
+            style={{ top: 'calc(50% + 24.2vmin)', width: '25.3vmin', x: '-50%', opacity: 0.9 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           />
