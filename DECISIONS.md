@@ -141,3 +141,8 @@ Judgment calls made while building, newest at the bottom of each phase.
 - The fixed ±step buttons (e.g. ±50 on a 5,000 target) are replaced by Remove / Add / Set buttons that open an "Update progress" sheet.
 - The sheet has Add · Remove · Set total, a big number field (decimals allowed), one-tap amounts sized to the target (`quickAmounts`: nice 1-2-5 numbers between ~1% and 25% of it), and a live "85 → 90 of 100" preview with a bar.
 - Saving shows a toast with Undo. Progress never goes below zero (`applyProgress`).
+
+## Intro watermark animates in
+- The "created by magmotion>" watermark is no longer baked into the iOS launch pictures or the static first frame in index.html, so it no longer just appears. After the logo pops, the intro brings it in: it rises 10px, unblurs, fades to 90% and is revealed left to right behind a soft, feathered mask edge (0.45 s delay, 0.85 s). With reduced motion it simply fades.
+- The intro now holds for 1.65 s (was 1.25 s), so the watermark is fully in before everything fades.
+- The launch pictures have new `-v2` file names, so iOS fetches the new ones instead of reusing its cached copies.

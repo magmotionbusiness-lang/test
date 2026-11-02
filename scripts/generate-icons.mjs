@@ -5,12 +5,7 @@ const require = createRequire(import.meta.url);
 // Playwright is preinstalled globally in the build container; not a project dependency.
 const { chromium } = require(process.env.PLAYWRIGHT_PATH ?? 'playwright');
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { readFileSync } from 'node:fs';
 import { iconSvg, logoSvg, MATTE } from './icon.mjs';
-
-// "created by magmotion>" watermark under the logo; same proportions as src/components/Intro.tsx.
-const WATERMARK = `data:image/png;base64,${readFileSync(new URL('../src/assets/created-by.png', import.meta.url)).toString('base64')}`;
-const WATERMARK_ASPECT = 127 / 480;
 
 const root = new URL('../public/', import.meta.url);
 mkdirSync(new URL('icons/', root), { recursive: true });
@@ -66,11 +61,11 @@ for (const [cw, ch, dpr, ipad] of DEVICES) {
       const w = (o === 'portrait' ? cw : ch) * dpr;
       const h = (o === 'portrait' ? ch : cw) * dpr;
       // Same matte + logo in both schemes; the in-app intro starts from exactly this frame.
+      // No watermark here: the intro animates it in (src/components/Intro.tsx).
       const icon = Math.round(Math.min(w, h) * 0.22);
-      const wmW = Math.round(icon * 1.15);
-      const wmTop = Math.round(h / 2 + icon / 2 + icon * 0.6);
-      const html = `<div style="position:relative;width:${w}px;height:${h}px;background:${MATTE};display:flex;align-items:center;justify-content:center">${logoSvg(icon)}<img src="${WATERMARK}" style="position:absolute;left:${Math.round((w - wmW) / 2)}px;top:${wmTop}px;width:${wmW}px;height:${Math.round(wmW * WATERMARK_ASPECT)}px;opacity:0.9"></div>`;
-      const file = `splash/${w}x${h}-${scheme}.png`;
+      const html = `<div style="width:${w}px;height:${h}px;background:${MATTE};display:flex;align-items:center;justify-content:center">${logoSvg(icon)}</div>`;
+      // Versioned names, so iOS fetches the new launch pictures instead of reusing cached ones.
+      const file = `splash/${w}x${h}-${scheme}-v2.png`;
       await render(html, w, h, file);
       links.push(
         `<link rel="apple-touch-startup-image" media="screen and (device-width: ${cw}px) and (device-height: ${ch}px) and (-webkit-device-pixel-ratio: ${dpr}) and (orientation: ${o}) and (prefers-color-scheme: ${scheme})" href="/${file}" />`,

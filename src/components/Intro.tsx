@@ -9,6 +9,8 @@ const FILLED = [1, 1, 0, 1, 1, 1, 0, 1, 1];
 const GAP = 8;
 const TILE = (100 - 2 * GAP) / 3;
 const KEY = 'hh-intro-shown';
+/** Opaque on the left, feathered edge, clear on the right; sliding it reveals the watermark smoothly. */
+const SOFT_WIPE = 'linear-gradient(90deg, #000 40%, transparent 60%)';
 
 /**
  * Opening intro on a fresh launch: the logo on the matte background pops,
@@ -44,7 +46,7 @@ export function Intro() {
         refreshThemeColor();
         setShow(false);
       },
-      reduced ? 350 : 1250,
+      reduced ? 500 : 1650,
     );
     return () => clearTimeout(t);
   }, [show, reduced]);
@@ -84,14 +86,21 @@ export function Intro() {
               />
             ))}
           </motion.svg>
-          {/* "created by magmotion>" — same size and spot as on the iOS launch screen (scripts/generate-icons.mjs). */}
+          {/* "created by magmotion>": once the logo has popped, it rises in and is revealed left to right behind a soft edge. */}
           <motion.img
             src={createdBy}
             alt=""
             className="absolute left-1/2"
-            style={{ top: 'calc(50% + 24.2vmin)', width: '25.3vmin', x: '-50%', opacity: 0.9 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            style={{
+              top: 'calc(50% + 24.2vmin)',
+              width: '25.3vmin',
+              x: '-50%',
+              ...(reduced ? {} : { WebkitMaskImage: SOFT_WIPE, maskImage: SOFT_WIPE, WebkitMaskSize: '250% 100%', maskSize: '250% 100%' }),
+            }}
+            initial={reduced ? { opacity: 0 } : { opacity: 0, y: 10, filter: 'blur(4px)', WebkitMaskPosition: '100% 0%', maskPosition: '100% 0%' }}
+            animate={reduced ? { opacity: 0.9 } : { opacity: 0.9, y: 0, filter: 'blur(0px)', WebkitMaskPosition: '0% 0%', maskPosition: '0% 0%' }}
+            exit={{ opacity: 0, transition: { duration: 0.3 } }}
+            transition={{ delay: reduced ? 0 : 0.45, duration: reduced ? 0.25 : 0.85, ease: [0.45, 0, 0.2, 1] }}
           />
         </motion.div>
       )}
