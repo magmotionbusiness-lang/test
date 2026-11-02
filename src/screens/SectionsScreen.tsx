@@ -13,7 +13,7 @@ import { formatPercent } from '@/lib/format';
 import { useSettings } from '@/app/useSettings';
 import { TileGrid } from '@/components/TileGrid';
 import { dailyShare } from '@/domain/aggregate';
-import { weekOverWeek } from '@/domain/analytics';
+import { rollingWeek } from '@/domain/analytics';
 import { shiftDate, today as todayFn } from '@/domain/dates';
 
 export function SectionsScreen() {
@@ -68,7 +68,7 @@ export function SectionsScreen() {
           render={(s) => {
             const habits = data.habits.filter((h) => h.sectionId === s.id);
             const count = habits.length;
-            const week = weekOverWeek(habits, data.entries, today, settings.weekStart).thisWeek;
+            const week = rollingWeek(habits, data.entries, today, settings.weekStart).thisWeek;
             return (
               <div className="p-4">
                 <button
@@ -93,7 +93,7 @@ export function SectionsScreen() {
                   {week !== null && (
                     <span className="shrink-0 text-right">
                       <span className="tabular block text-headline">{formatPercent(week)}</span>
-                      <span className="block text-caption text-secondary">this week</span>
+                      <span className="block text-caption text-secondary">last 7 days</span>
                     </span>
                   )}
                   {!editing && <ChevronRight size={18} className="shrink-0 text-tertiary" aria-hidden />}

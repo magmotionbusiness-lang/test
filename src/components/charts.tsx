@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { useLayoutEffect, useRef, useState } from 'react';
 
 export interface Point {
@@ -66,7 +67,18 @@ export function LineChart({ data, color, format, max, title, height = 170 }: Cha
         >
           <Grid width={width} top={top} y={y} format={format} />
           {segments.map((d, i) => (
-            <path key={i} d={d} fill="none" stroke={color} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+            <motion.path
+              key={i}
+              d={d}
+              fill="none"
+              stroke={color}
+              strokeWidth={2}
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            />
           ))}
           <Ticks data={data} x={x} height={height} />
           {a && a.value !== null && active !== null && (
@@ -138,7 +150,12 @@ export function BarChart({
             const isExtreme = highlightExtremes && (i === bestIndex || i === worstIndex);
             return (
               <g key={i}>
-                <path
+                <motion.path
+                  // Bars grow up from the baseline, staggered left to right.
+                  initial={{ scaleY: 0 }}
+                  animate={{ scaleY: 1 }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 26, delay: Math.min(i * 0.025, 0.4) }}
+                  style={{ transformBox: 'fill-box', transformOrigin: 'bottom' }}
                   d={`M${x0},${PAD.top + ih}V${y0 + r}Q${x0},${y0} ${x0 + r},${y0}H${x0 + bw - r}Q${x0 + bw},${y0} ${x0 + bw},${y0 + r}V${PAD.top + ih}Z`}
                   fill={color}
                   fillOpacity={active === null || active === i ? 1 : 0.45}

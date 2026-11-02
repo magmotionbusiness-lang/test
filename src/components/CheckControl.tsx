@@ -28,8 +28,8 @@ export function CheckControl({ habit, entry, onTap, onLongPress }: Props) {
   const timer = useRef<ReturnType<typeof setTimeout>>();
   const longPressed = useRef(false);
 
-  const size = 34;
-  const r = 15;
+  const size = 40;
+  const r = 18;
   const c = 2 * Math.PI * r;
 
   const start = () => {
@@ -68,7 +68,7 @@ export function CheckControl({ habit, entry, onTap, onLongPress }: Props) {
       }}
       aria-label={label}
       aria-pressed={done}
-      className="relative -mr-1.5 flex h-11 w-11 shrink-0 items-center justify-center"
+      className="relative -mr-1.5 flex h-12 w-12 shrink-0 items-center justify-center"
     >
       <svg width={size} height={size} className="-rotate-90" aria-hidden>
         <circle
@@ -78,7 +78,7 @@ export function CheckControl({ habit, entry, onTap, onLongPress }: Props) {
           fill="none"
           stroke={color}
           strokeOpacity={skipped ? 0.25 : 0.35}
-          strokeWidth={2.5}
+          strokeWidth={2.8}
           strokeDasharray={skipped ? '3 3' : undefined}
         />
         {!done && progress > 0 && (
@@ -88,7 +88,7 @@ export function CheckControl({ habit, entry, onTap, onLongPress }: Props) {
             r={r}
             fill="none"
             stroke={color}
-            strokeWidth={2.5}
+            strokeWidth={2.8}
             strokeLinecap="round"
             strokeDasharray={c}
             initial={false}
@@ -110,14 +110,14 @@ export function CheckControl({ habit, entry, onTap, onLongPress }: Props) {
       <span className="absolute inset-0 flex items-center justify-center" aria-hidden>
         {done ? (
           <motion.span initial={{ scale: 0.4 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 600, damping: 18 }}>
-            <Check size={19} strokeWidth={3.2} className="text-white" />
+            <Check size={22} strokeWidth={3.2} className="text-white" />
           </motion.span>
         ) : skipped ? (
-          <Minus size={16} strokeWidth={2.5} style={{ color }} />
+          <Minus size={18} strokeWidth={2.8} style={{ color }} />
         ) : habit.type === 'count' && (entry?.value ?? 0) > 0 ? (
-          <span className="tabular text-[12px] font-semibold text-label">{entry!.value}</span>
+          <span className="tabular text-[13px] font-semibold text-label">{entry!.value}</span>
         ) : habit.type === 'count' ? (
-          <Plus size={16} strokeWidth={2.5} style={{ color }} />
+          <Plus size={18} strokeWidth={2.8} style={{ color }} />
         ) : null}
       </span>
     </motion.button>

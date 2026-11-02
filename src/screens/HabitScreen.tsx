@@ -12,6 +12,8 @@ import type { Entry, LocalDate } from '@/db/types';
 import { ActionSheet } from '@/components/ActionSheet';
 import { AmountSheet } from '@/components/AmountSheet';
 import { DaySheet } from '@/components/DaySheet';
+import { DoneButton } from '@/components/DoneButton';
+import { FadeSwap } from '@/components/Fade';
 import { HabitForm } from '@/components/HabitForm';
 import { MonthCalendar } from '@/components/MonthCalendar';
 import { NavButton, Page } from '@/components/Page';
@@ -158,6 +160,11 @@ export function HabitScreen() {
         )}
       </Card>
 
+      <div className="mb-6">
+        <DoneButton habit={habit} entry={entries.find((e) => e.date === today)} date={today} onAmount={() => setAmountFor(today)} size="large" />
+        <p className="mt-1.5 text-center text-footnote text-secondary">Today · {formatDay(today, 'EEEE d MMMM')}</p>
+      </div>
+
       <Card className="mb-6">
         <div className="mb-3 flex items-center justify-between gap-3">
           <h2 className="text-headline">Calendar</h2>
@@ -173,28 +180,31 @@ export function HabitScreen() {
             />
           </div>
         </div>
-        {view === 'year' ? (
-          <TileGrid
-            color={color}
-            tiles={tiles}
-            start={gridStart}
-            today={today}
-            weekStart={settings.weekStart}
-            label={`${habit.name} calendar`}
-            onTap={onTapDay}
-            onLongPress={setDayFor}
-          />
-        ) : (
-          <MonthCalendar
-            color={color}
-            tiles={tiles}
-            start={gridStart}
-            today={today}
-            weekStart={settings.weekStart}
-            onTap={onTapDay}
-            onLongPress={setDayFor}
-          />
-        )}
+        <FadeSwap swapKey={view}>
+          {view === 'year' ? (
+            <TileGrid
+              color={color}
+              tiles={tiles}
+              start={gridStart}
+              today={today}
+              weekStart={settings.weekStart}
+              label={`${habit.name} calendar`}
+              onTap={onTapDay}
+              onLongPress={setDayFor}
+              fit={false}
+            />
+          ) : (
+            <MonthCalendar
+              color={color}
+              tiles={tiles}
+              start={gridStart}
+              today={today}
+              weekStart={settings.weekStart}
+              onTap={onTapDay}
+              onLongPress={setDayFor}
+            />
+          )}
+        </FadeSwap>
         <p className="mt-3 text-caption text-secondary">
           Tap a day to log it. Hold a day for details, notes{section?.kind === 'gym' ? ', workouts' : ''} and streak freezes.
         </p>

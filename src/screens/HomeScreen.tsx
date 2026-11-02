@@ -1,6 +1,9 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Plus } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
+import { spring } from '@/app/motion';
+import { Appear, FadeSwap } from '@/components/Fade';
 import { useNavigate } from 'react-router-dom';
 import { db } from '@/db/db';
 import type { Habit } from '@/db/types';
@@ -39,6 +42,11 @@ export function HomeScreen() {
   const [noteFor, setNoteFor] = useState<Habit | null>(null);
   const [editing, setEditing] = useState<Habit | undefined>();
   const [formOpen, setFormOpen] = useState(false);
+  const prevDate = useRef(date);
+  const dayDirection: -1 | 0 | 1 = date === prevDate.current ? 0 : date > prevDate.current ? 1 : -1;
+  useEffect(() => {
+    prevDate.current = date;
+  }, [date]);
 
   const data = useLiveQuery(async () => {
     const [habits, sections, entries, goals] = await Promise.all([
@@ -156,35 +164,42 @@ export function HomeScreen() {
         />
       )}
 
-      {data && data.habits.length > 0 && all.length === 0 && (
-        <EmptyState title="A free day" message="No habits are scheduled for this day. Enjoy the rest." />
-      )}
+      {/* Switching days cross-fades the list, sliding toward the chosen day. */}
+      <FadeSwap swapKey={date} direction={dayDirection}>
+        {data && data.habits.length > 0 && all.length === 0 && (
+          <EmptyState title="A free day" message="No habits are scheduled for this day. Enjoy the rest." />
+        )}
 
-      {groups.map((g) => (
-        <ListGroup key={g.timeOfDay} header={TIME_OF_DAY_LABEL[g.timeOfDay]}>
-          {g.items.map(({ habit, entry }) => (
-            <HabitRow
-              key={habit.id}
-              habit={habit}
-              entry={entry}
-              sectionColor={sectionColor.get(habit.sectionId) ?? colorVar(habit.color)}
-              streak={isToday ? streaks.get(habit.id) : undefined}
-              onTap={() => onTap(habit)}
-              onLongPress={habit.type === 'count' ? () => setAmountFor(habit) : undefined}
-              onComplete={() => completeHabit(habit, date)}
-              onSkip={() => skipHabit(habit, date)}
-              onMore={() => setMoreFor(habit)}
-              onOpen={() => navigate(`/habits/${habit.id}`, { state: { back: isToday ? 'Today' : formatDay(date, 'EEEE') } })}
-            />
-          ))}
-        </ListGroup>
-      ))}
+        {groups.map((g) => (
+          <ListGroup key={g.timeOfDay} header={TIME_OF_DAY_LABEL[g.timeOfDay]}>
+            {g.items.map(({ habit, entry }) => (
+              // `layout` slides rows smoothly when a done habit sinks to the bottom of its group.
+              <motion.div key={habit.id} layout="position" transition={spring}>
+                <HabitRow
+                  habit={habit}
+                  entry={entry}
+                  sectionColor={sectionColor.get(habit.sectionId) ?? colorVar(habit.color)}
+                  streak={isToday ? streaks.get(habit.id) : undefined}
+                  onTap={() => onTap(habit)}
+                  onLongPress={habit.type === 'count' ? () => setAmountFor(habit) : undefined}
+                  onComplete={() => completeHabit(habit, date)}
+                  onSkip={() => skipHabit(habit, date)}
+                  onMore={() => setMoreFor(habit)}
+                  onOpen={() => navigate(`/habits/${habit.id}`, { state: { back: isToday ? 'Today' : formatDay(date, 'EEEE') } })}
+                />
+              </motion.div>
+            ))}
+          </ListGroup>
+        ))}
 
-      {all.length > 0 && <p className="mb-6 px-4 text-center text-footnote text-secondary">Swipe right to complete · Swipe left to skip</p>}
+        {all.length > 0 && <p className="mb-6 px-4 text-center text-footnote text-secondary">Swipe right to complete · Swipe left to skip</p>}
 
-      {data && data.habits.length > 0 && (!isToday || new Date().getHours() >= 17 || (all.length > 0 && doneCount === all.length)) && (
-        <DailyCheckIn date={date} title={isToday ? 'Daily check-in' : `Check-in · ${formatDay(date, 'EEEE')}`} />
-      )}
+        <Appear
+          show={Boolean(data && data.habits.length > 0 && (!isToday || new Date().getHours() >= 17 || (all.length > 0 && doneCount === all.length)))}
+        >
+          <DailyCheckIn date={date} title={isToday ? 'Daily check-in' : `Check-in · ${formatDay(date, 'EEEE')}`} />
+        </Appear>
+      </FadeSwap>
 
       {data && data.habits.length > 0 && isToday && (
         <HomeOverview habits={data.habits} entries={data.entries} goals={data.goals} today={today} weekStart={settings.weekStart} />

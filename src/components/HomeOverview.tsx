@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Entry, Goal, Habit, LocalDate } from '@/db/types';
 import { dailyShare } from '@/domain/aggregate';
-import { streakLeaders, weekOverWeek } from '@/domain/analytics';
+import { streakLeaders, rollingWeek } from '@/domain/analytics';
 import { formatDay, shiftDate } from '@/domain/dates';
 import { goalPace } from '@/domain/goals';
 import { formatStreak } from '@/domain/streaks';
@@ -24,7 +24,7 @@ export function HomeOverview({ habits, entries, goals, today, weekStart }: Props
   const navigate = useNavigate();
   const start = shiftDate(today, -181);
   const grid = useMemo(() => dailyShare(habits, entries, start, today, weekStart), [habits, entries, start, today, weekStart]);
-  const week = useMemo(() => weekOverWeek(habits, entries, today, weekStart), [habits, entries, today, weekStart]);
+  const week = useMemo(() => rollingWeek(habits, entries, today, weekStart), [habits, entries, today, weekStart]);
   const leaders = useMemo(
     () =>
       streakLeaders(habits, entries, today, weekStart)
@@ -75,13 +75,13 @@ export function HomeOverview({ habits, entries, goals, today, weekStart }: Props
 
       <div className="mb-3 grid grid-cols-2 gap-3">
         <Card className="!p-4">
-          <div className="text-footnote text-secondary">This week</div>
+          <div className="text-footnote text-secondary">Last 7 days</div>
           <div className="tabular text-title">{week.thisWeek === null ? '—' : formatPercent(week.thisWeek)}</div>
           {delta !== null && (
             <div className={`mt-0.5 flex items-center gap-1 text-footnote font-medium ${delta >= 0 ? 'text-success-text' : 'text-danger-text'}`}>
               {delta >= 0 ? <TrendingUp size={14} aria-hidden /> : <TrendingDown size={14} aria-hidden />}
               {delta >= 0 ? '+' : '−'}
-              {Math.abs(delta)} pts vs last week
+              {Math.abs(delta)} pts vs the 7 days before
             </div>
           )}
         </Card>

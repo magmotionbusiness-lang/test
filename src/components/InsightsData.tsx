@@ -243,7 +243,10 @@ function Mini({ label, value }: { label: string; value: number }) {
 function Bar({ value, color }: { value: number; color: string }) {
   return (
     <div className="h-1.5 overflow-hidden rounded-full bg-[rgb(var(--fill)/0.2)]" aria-hidden>
-      <div className="h-full rounded-full" style={{ width: `${Math.max(0, Math.min(1, value)) * 100}%`, background: color }} />
+      <div
+        className="h-full rounded-full transition-[width] duration-500 ease-out"
+        style={{ width: `${Math.max(0, Math.min(1, value)) * 100}%`, background: color }}
+      />
     </div>
   );
 }

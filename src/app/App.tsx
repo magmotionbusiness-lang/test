@@ -3,6 +3,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Stack } from './Stack';
 import { useApplyAccent, useApplyTheme } from './theme';
+import { useAppBadge } from './useAppBadge';
 import { useSettings } from './useSettings';
 import { TabBar } from '@/components/TabBar';
 import { ToastHost } from '@/components/Toast';
@@ -39,6 +40,7 @@ export function App() {
   const settings = useSettings();
   useApplyTheme(settings.theme);
   useApplyAccent(settings.accent);
+  useAppBadge(settings);
   const [installOpen, setInstallOpen] = useState(false);
   const navigate = useNavigate();
   // undefined while loading, so returning users never see onboarding flash.

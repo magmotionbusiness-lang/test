@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { aiUsage } from '@/ai/client';
 import { useSettings } from '@/app/useSettings';
+import { badgeSupported } from '@/app/useAppBadge';
 import { db } from '@/db/db';
 import { backupFileName, exportBackup, importBackup, parseBackup, saveFile } from '@/db/backup';
 import { loadDemoData } from '@/db/demo';
@@ -83,6 +84,22 @@ export function SettingsScreen() {
     }
   };
 
+  const onBadgeToggle = async (on: boolean) => {
+    if (!on) {
+      await updateSettings({ appBadge: false });
+      return;
+    }
+    if (!badgeSupported() || typeof Notification === 'undefined') {
+      toast('Add Habit Hub to your Home Screen first (iOS 16.4 or later), then turn this on there');
+      return;
+    }
+    const permission = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
+    if (permission === 'granted') {
+      await updateSettings({ appBadge: true });
+      toast('Badge on — it updates whenever you open the app');
+    } else toast('iOS needs notification permission for badges. Allow it in iOS Settings → Habit Hub → Notifications');
+  };
+
   const backupAge = settings.lastBackupAt ? Math.floor((Date.now() - Date.parse(settings.lastBackupAt)) / 86_400_000) : null;
 
   return (
@@ -127,6 +144,15 @@ export function SettingsScreen() {
           </div>
           <ColorPicker value={settings.accent} onChange={(accent) => updateSettings({ accent })} />
         </div>
+      </ListGroup>
+
+      <ListGroup
+        header="App icon"
+        footer="Shows how many of today’s habits are left as a red badge on the Home Screen icon. iOS updates it whenever you open the app. Needs the app installed on your Home Screen and notification permission (no notifications are sent)."
+      >
+        <FieldRow label="Habits left on app icon">
+          <Toggle checked={Boolean(settings.appBadge)} onChange={onBadgeToggle} label="Habits left on app icon" />
+        </FieldRow>
       </ListGroup>
 
       <ListGroup

@@ -190,3 +190,19 @@ export function freezeCandidates<H extends HabitLike>(
   }
   return out;
 }
+
+/**
+ * Last 7 days (ending today) vs the 7 days before, pooled. Rolling rather
+ * than calendar weeks, so early in the week there is still something to show.
+ */
+export function rollingWeek(
+  habits: HabitLike[],
+  entries: Entry[],
+  today: LocalDate,
+  weekStart: 0 | 1,
+): { thisWeek: number | null; lastWeek: number | null } {
+  return {
+    thisWeek: groupConsistency(habits, entries, shiftDate(today, -6), today, today, weekStart),
+    lastWeek: groupConsistency(habits, entries, shiftDate(today, -13), shiftDate(today, -7), today, weekStart),
+  };
+}

@@ -131,6 +131,8 @@ export interface Settings {
   includeNotesInAI: boolean;
   onboardingDone: boolean;
   installGuideSeen: boolean;
+  /** Show today's remaining habit count on the Home Screen icon. */
+  appBadge?: boolean;
   lastBackupAt: ISODateTime | null;
   updatedAt: ISODateTime;
 }

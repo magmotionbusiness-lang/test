@@ -1,6 +1,6 @@
 import { confirmAction } from '@/lib/confirm';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ChevronRight, Ellipsis, Plus, Sparkles } from 'lucide-react';
+import { Ellipsis, Plus, Sparkles } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSettings } from '@/app/useSettings';
@@ -8,6 +8,9 @@ import { db } from '@/db/db';
 import { deleteSection, reorder, updateHabit, updateSection } from '@/db/repo';
 import type { Entry, Habit } from '@/db/types';
 import { ActionSheet } from '@/components/ActionSheet';
+import { AmountSheet } from '@/components/AmountSheet';
+import { DoneButton } from '@/components/DoneButton';
+import { setHabitValue } from '@/app/logActions';
 import { BarChart, LineChart } from '@/components/charts';
 import { HabitForm } from '@/components/HabitForm';
 import { NavButton, Page } from '@/components/Page';
@@ -23,7 +26,7 @@ import {
   groupWeekdayRates,
   personalRecords,
   streakLeaders,
-  weekOverWeek,
+  rollingWeek,
   weeklyConsistency,
   weeklyVolume,
   workoutSessions,
@@ -47,6 +50,7 @@ export function SectionScreen() {
   const [habitForm, setHabitForm] = useState(false);
   const [reordering, setReordering] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [amountFor, setAmountFor] = useState<Habit | null>(null);
 
   const data = useLiveQuery(async () => {
     const section = await db.sections.get(id);
@@ -123,7 +127,7 @@ export function SectionScreen() {
         <Card className="mb-6">
           <div className="mb-3 flex items-end justify-between gap-3">
             <div>
-              <div className="text-footnote text-secondary">This week</div>
+              <div className="text-footnote text-secondary">Last 7 days</div>
               <div className="tabular text-[34px] font-bold leading-tight">{stats.week.thisWeek === null ? '—' : pct(stats.week.thisWeek)}</div>
             </div>
             <WeekDelta thisWeek={stats.week.thisWeek} lastWeek={stats.week.lastWeek} />
@@ -164,6 +168,7 @@ export function SectionScreen() {
                 weekStart={settings.weekStart}
                 reordering={reordering}
                 onOpen={() => navigate(`/habits/${h.id}`, { state: { back: section?.name } })}
+                onAmount={setAmountFor}
               />
             )}
           />
@@ -245,6 +250,12 @@ export function SectionScreen() {
       />
       <SectionForm open={editSection} onClose={() => setEditSection(false)} section={section} />
       <HabitForm open={habitForm} onClose={() => setHabitForm(false)} sectionId={id} />
+      <AmountSheet
+        habit={amountFor}
+        entry={amountFor ? entries.find((e) => e.habitId === amountFor.id && e.date === today) : undefined}
+        onClose={() => setAmountFor(null)}
+        onSave={(v) => amountFor && setHabitValue(amountFor, today, v)}
+      />
       {section && (
         <ShareCardSheet open={shareOpen} onClose={() => setShareOpen(false)} subject={{ kind: 'section', section, habits: active, entries }} />
       )}
@@ -261,7 +272,7 @@ function computeStats(habits: Habit[], entries: Entry[], today: string, weekStar
   const weekly = weeklyConsistency(habits, own, 26, today, weekStart);
   return {
     grid: dailyShare(habits, own, shiftDate(today, -181), today, weekStart),
-    week: weekOverWeek(habits, own, today, weekStart),
+    week: rollingWeek(habits, own, today, weekStart),
     weekly: weekly.map((w) => ({ label: `Week of ${formatDay(w.weekStart, 'd MMM')}`, tick: formatDay(w.weekStart, 'MMM'), value: w.score })),
     weekdays: order.map((d) => ({ label: WEEKDAY[d]!, tick: WEEKDAY[d]!.slice(0, 2), value: wd[d] ?? null })),
     total: own.filter(isCompleted).length,
@@ -279,7 +290,7 @@ function WeekDelta({ thisWeek, lastWeek }: { thisWeek: number | null; lastWeek: 
       <div className={`tabular text-headline ${up ? 'text-success-text' : 'text-danger-text'}`}>
         {up ? '▲' : '▼'} {Math.abs(d)} pts
       </div>
-      <div className="text-footnote text-secondary">vs last week ({formatPercent(lastWeek)})</div>
+      <div className="text-footnote text-secondary">vs the 7 days before ({formatPercent(lastWeek)})</div>
     </div>
   );
 }
@@ -291,6 +302,7 @@ function HabitRowCompact({
   weekStart,
   reordering,
   onOpen,
+  onAmount,
 }: {
   habit: Habit;
   entries: Entry[];
@@ -298,8 +310,10 @@ function HabitRowCompact({
   weekStart: 0 | 1;
   reordering: boolean;
   onOpen: () => void;
+  onAmount: (h: Habit) => void;
 }) {
-  const start = shiftDate(today, -83);
+  // 26 weeks requested; the grid shows as many whole weeks as fit the row.
+  const start = shiftDate(today, -181);
   const tiles = useMemo(
     () =>
       buildTiles(
@@ -311,23 +325,30 @@ function HabitRowCompact({
     [habit, entries, start, today],
   );
   const settingsLabel = describeSchedule(habit.schedule, weekStart);
+  const todayEntry = entries.find((e) => e.habitId === habit.id && e.date === today);
   return (
-    <button onClick={() => !reordering && onOpen()} className="w-full px-4 py-3 text-left">
+    <div className="px-4 py-3">
       <div className="flex items-center gap-3">
-        <span className="text-[22px] leading-none" aria-hidden>
-          {habit.emoji}
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-body">{habit.name}</span>
-          <span className="block truncate text-footnote text-secondary">
-            {settingsLabel}
-            {habit.type !== 'check' && habit.type !== 'avoid' ? ` · ${habit.target} ${habit.unit}` : habit.type === 'avoid' ? ' · Avoid' : ''}
+        <button
+          onClick={() => !reordering && onOpen()}
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+          aria-label={`Open ${habit.name}`}
+        >
+          <span className="text-[22px] leading-none" aria-hidden>
+            {habit.emoji}
           </span>
-        </span>
-        {!reordering && <ChevronRight size={18} className="shrink-0 text-tertiary" aria-hidden />}
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-body">{habit.name}</span>
+            <span className="block truncate text-footnote text-secondary">
+              {settingsLabel}
+              {habit.type !== 'check' && habit.type !== 'avoid' ? ` · ${habit.target} ${habit.unit}` : habit.type === 'avoid' ? ' · Avoid' : ''}
+            </span>
+          </span>
+        </button>
+        {!reordering && <DoneButton habit={habit} entry={todayEntry} date={today} onAmount={() => onAmount(habit)} />}
       </div>
       {!reordering && (
-        <div className="mt-2 pl-[34px]">
+        <button onClick={onOpen} className="mt-3 block w-full" aria-label={`${habit.name} calendar, open habit`}>
           <TileGrid
             color={colorVar(habit.color)}
             tiles={tiles}
@@ -337,9 +358,9 @@ function HabitRowCompact({
             size="compact"
             label={`${habit.name}, last 12 weeks`}
           />
-        </div>
+        </button>
       )}
-    </button>
+    </div>
   );
 }
 

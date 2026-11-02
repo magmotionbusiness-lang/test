@@ -88,3 +88,12 @@ Judgment calls made while building, newest at the bottom of each phase.
 - **Tab switches animate**: a short spring slide plus fade toward the tapped tab (left or right by tab order). Pushes and pops keep the full iOS slide.
 - **Insights is the centre tab** and the app's data hub, shown as a larger raised button in the middle of the tab bar. It shows everything for the chosen period: consistency vs the period before, done/partial/skipped/missed totals, a day-by-day chart, sections and habits ranked with changes, streaks, mood and energy, weekdays and the 26-week grid. The AI coach sits below and reads the same numbers.
 - **Insights periods are rolling** (Today, 7 days, 30 days, Custom), not calendar week and month, so they never come up empty on a Monday or the 1st.
+
+## After launch — feedback round 2
+
+- **Home Screen widget**: not possible for a web app on iOS (widgets need a native App Store app). The closest equivalent is the **app icon badge** (iOS 16.4+, installed web apps): Settings → "Habits left on app icon" shows today's open habits as a badge. iOS requires notification permission for badges; no notifications are sent. Web apps can only update it while open, so it refreshes on every change and when the app returns to the foreground.
+- **Done buttons**: section habit rows get a clear Done button for today, and the habit page has a full-width Done button at the top. Check/avoid toggle, count adds one, time/number habits open the amount sheet until the target is met. Home check circles grew from 34 to 40 pt (48 pt hit area).
+- **Grids fit their space**: tile grids measure their container and show as many whole weeks as fit, with tiles sized to fill the width exactly (no half-cut columns or empty space). Only the habit page's full-history calendar still scrolls. Month labels near the right edge are right-aligned so they aren't clipped.
+- **Motion everywhere**: rows glide when a finished habit sinks to the bottom; switching days, Insights periods, Year/Month and months cross-fades with a slide in the direction of travel; the check-in card expands in; chart bars grow and lines draw in; progress bars glide; the Done button morphs between states. All of it respects Reduce Motion.
+- **Rolling 7 days** replaces "this week" on Home, the section page and section cards, matching Insights.
+- **Bug fix**: the confirmation helper introduced for the preview build called itself, so confirmed actions (delete, erase, load demo over existing data, import) crashed instead of asking. Fixed, with a unit test.

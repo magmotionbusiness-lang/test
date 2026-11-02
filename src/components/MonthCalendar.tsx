@@ -5,6 +5,7 @@ import type { LocalDate } from '@/db/types';
 import { eachDay, fromLocalDate, shiftDate, toLocalDate, weekdayOf } from '@/domain/dates';
 import type { Tile, TileState } from '@/domain/score';
 import { useLongPress } from '@/lib/useLongPress';
+import { FadeSwap } from './Fade';
 
 interface Props {
   color: string;
@@ -32,6 +33,7 @@ const STATE_LABEL: Record<TileState, string> = {
 /** Classic 7-column month calendar with large tiles; each day is a button. */
 export function MonthCalendar({ color, tiles, start, today, weekStart, onTap, onLongPress }: Props) {
   const [month, setMonth] = useState(() => startOfMonth(fromLocalDate(today)));
+  const [dir, setDir] = useState<-1 | 1>(1);
   const first = toLocalDate(month);
   const last = toLocalDate(endOfMonth(month));
   const lead = (weekdayOf(first) - weekStart + 7) % 7;
@@ -44,7 +46,10 @@ export function MonthCalendar({ color, tiles, start, today, weekStart, onTap, on
     <div>
       <div className="mb-2 flex items-center justify-between">
         <button
-          onClick={() => setMonth((m) => addMonths(m, -1))}
+          onClick={() => {
+            setDir(-1);
+            setMonth((m) => addMonths(m, -1));
+          }}
           disabled={!canPrev}
           className="flex h-11 w-11 items-center justify-center text-accent disabled:opacity-30"
           aria-label="Previous month"
@@ -53,7 +58,10 @@ export function MonthCalendar({ color, tiles, start, today, weekStart, onTap, on
         </button>
         <h3 className="text-headline">{format(month, 'MMMM yyyy')}</h3>
         <button
-          onClick={() => setMonth((m) => addMonths(m, 1))}
+          onClick={() => {
+            setDir(1);
+            setMonth((m) => addMonths(m, 1));
+          }}
           disabled={!canNext}
           className="flex h-11 w-11 items-center justify-center text-accent disabled:opacity-30"
           aria-label="Next month"
@@ -61,28 +69,30 @@ export function MonthCalendar({ color, tiles, start, today, weekStart, onTap, on
           <ChevronRight size={22} aria-hidden />
         </button>
       </div>
-      <div className="grid grid-cols-7 gap-1.5" role="grid">
-        {headers.map((h, i) => (
-          <div key={i} className="pb-1 text-center text-caption font-medium text-secondary" aria-hidden>
-            {h}
-          </div>
-        ))}
-        {Array.from({ length: lead }, (_, i) => (
-          <div key={`lead${i}`} />
-        ))}
-        {days.map((d) => (
-          <DayCell
-            key={d}
-            date={d}
-            tile={tiles.get(d) ?? { state: d > today ? 'future' : 'unscheduled', progress: 0 }}
-            isToday={d === today}
-            color={color}
-            disabled={d > today || d < start}
-            onTap={onTap}
-            onLongPress={onLongPress}
-          />
-        ))}
-      </div>
+      <FadeSwap swapKey={first} direction={dir}>
+        <div className="grid grid-cols-7 gap-1.5" role="grid">
+          {headers.map((h, i) => (
+            <div key={i} className="pb-1 text-center text-caption font-medium text-secondary" aria-hidden>
+              {h}
+            </div>
+          ))}
+          {Array.from({ length: lead }, (_, i) => (
+            <div key={`lead${i}`} />
+          ))}
+          {days.map((d) => (
+            <DayCell
+              key={d}
+              date={d}
+              tile={tiles.get(d) ?? { state: d > today ? 'future' : 'unscheduled', progress: 0 }}
+              isToday={d === today}
+              color={color}
+              disabled={d > today || d < start}
+              onTap={onTap}
+              onLongPress={onLongPress}
+            />
+          ))}
+        </div>
+      </FadeSwap>
     </div>
   );
 }

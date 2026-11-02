@@ -9,6 +9,7 @@ import { useSettings } from '@/app/useSettings';
 import { db } from '@/db/db';
 import type { AIReview, LocalDate } from '@/db/types';
 import { Page } from '@/components/Page';
+import { FadeSwap } from '@/components/Fade';
 import { InsightsData } from '@/components/InsightsData';
 import { ErrorCard, ReviewCards, SkeletonCards } from '@/components/ReviewCards';
 import { Sheet } from '@/components/Sheet';
@@ -154,7 +155,7 @@ export function InsightsScreen() {
       </div>
 
       {payload && data && (
-        <div className="mt-4">
+        <FadeSwap swapKey={`${range}|${from}|${to}|${sectionId ?? ''}`} className="mt-4">
           <InsightsData
             payload={payload}
             habits={data.habits}
@@ -166,7 +167,7 @@ export function InsightsScreen() {
             weekStart={settings.weekStart}
             sectionId={sectionId}
           />
-        </div>
+        </FadeSwap>
       )}
 
       {payload && (

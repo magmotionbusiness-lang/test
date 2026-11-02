@@ -130,7 +130,7 @@ function GoalCard({ goal, habits, pace, onClick }: { goal: Goal; habits: Habit[]
             : 'No deadline'}
         </p>
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-[rgb(var(--fill)/0.2)]" aria-hidden>
-          <div className="h-full rounded-full bg-accent" style={{ width: `${pace.progress * 100}%` }} />
+          <div className="h-full rounded-full transition-[width] duration-500 ease-out bg-accent" style={{ width: `${pace.progress * 100}%` }} />
         </div>
         <div className="mt-2 flex items-center justify-between gap-2 text-caption text-secondary">
           <span className="tabular">

@@ -82,3 +82,13 @@ describe('freezeCandidates', () => {
     expect(freezeCandidates([mwf], mwfEntries, '2026-10-30', 1)).toHaveLength(0);
   });
 });
+
+describe('rollingWeek', () => {
+  it('compares the last 7 days with the 7 before, even on a Monday', async () => {
+    const { rollingWeek } = await import('./analytics');
+    const entries = ['2026-10-27', '2026-10-28', '2026-10-29', '2026-10-30', '2026-10-31', '2026-11-01', '2026-10-20'].map((d) => e('a', d));
+    const r = rollingWeek([h('a', { kind: 'daily' }, '2026-10-01')], entries, '2026-11-02', 1);
+    expect(r.thisWeek).toBe(1); // 27 Oct–1 Nov all done; today (Mon 2 Nov) not counted yet
+    expect(r.lastWeek).toBeCloseTo(1 / 7);
+  });
+});

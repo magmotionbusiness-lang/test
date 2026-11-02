@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef } from 'react';
+import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { LocalDate } from '@/db/types';
 import { daysBetween, formatDay, shiftDate, weekStartOf } from '@/domain/dates';
 import type { Tile } from '@/domain/score';
@@ -18,11 +18,17 @@ interface Props {
   label: string;
   onTap?: (date: LocalDate) => void;
   onLongPress?: (date: LocalDate) => void;
+  /**
+   * Fit the grid to its container: show as many whole weeks as fit (newest
+   * last) and size tiles to fill the width exactly. Turn off for long
+   * scrollable histories.
+   */
+  fit?: boolean;
 }
 
-const DIM: Record<GridSize, { tile: number; gap: number; labels: boolean }> = {
-  compact: { tile: 12, gap: 3, labels: false },
-  year: { tile: 17, gap: 3, labels: true },
+const DIM: Record<GridSize, { tile: number; gap: number; labels: boolean; min: number; max: number }> = {
+  compact: { tile: 12, gap: 3, labels: false, min: 10, max: 22 },
+  year: { tile: 17, gap: 3, labels: true, min: 14, max: 24 },
 };
 const LABEL_W = 22;
 const LABEL_H = 18;
@@ -44,15 +50,48 @@ interface Cell {
  * re-renders that month. Taps are hit-tested from coordinates, so there are
  * no per-tile listeners.
  */
-export function TileGrid({ color, tiles, start, today, weekStart, size = 'year', mode = 'habit', label, onTap, onLongPress }: Props) {
-  const { tile, gap, labels } = DIM[size];
-  const step = tile + gap;
+export function TileGrid({
+  color,
+  tiles,
+  start: requestedStart,
+  today,
+  weekStart,
+  size = 'year',
+  mode = 'habit',
+  label,
+  onTap,
+  onLongPress,
+  fit = true,
+}: Props) {
+  const dim = DIM[size];
+  const { gap, labels } = dim;
   const offX = labels ? LABEL_W : 0;
   const offY = labels ? LABEL_H : 0;
   const scrollRef = useRef<HTMLDivElement>(null);
   const prev = useRef<Map<LocalDate, Tile> | null>(null);
+  const [boxWidth, setBoxWidth] = useState(0);
 
-  const gridStart = weekStartOf(start, weekStart);
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    if (!el || !fit) return;
+    setBoxWidth(el.clientWidth);
+    const obs = new ResizeObserver(([e]) => e && setBoxWidth(Math.floor(e.contentRect.width)));
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [fit]);
+
+  const fullStart = weekStartOf(requestedStart, weekStart);
+  const allCols = Math.floor(daysBetween(fullStart, today) / 7) + 1;
+  let tile = dim.tile;
+  let gridStart = fullStart;
+  if (fit && boxWidth > 0) {
+    const avail = boxWidth - offX;
+    const shown = Math.max(1, Math.min(allCols, Math.floor((avail + gap) / (dim.min + gap))));
+    gridStart = shiftDate(fullStart, (allCols - shown) * 7);
+    tile = Math.max(dim.min, Math.min(dim.max, Math.floor((avail - (shown - 1) * gap) / shown)));
+  }
+  const start = requestedStart > gridStart ? requestedStart : gridStart;
+  const step = tile + gap;
   const cols = Math.floor(daysBetween(gridStart, today) / 7) + 1;
   const width = offX + cols * step - gap;
   const height = offY + 7 * step - gap;
@@ -98,6 +137,8 @@ export function TileGrid({ color, tiles, start, today, weekStart, size = 'year',
     }
     return { months: [...groups.entries()], monthLabels: labelsOut };
   }, [tiles, gridStart, today, start, mode, offX, step]);
+  // Until measured, a fitted grid reserves its height and draws nothing (no flash of the wrong size).
+  const measuring = fit && boxWidth === 0;
 
   useEffect(() => {
     prev.current = tiles;
@@ -129,72 +170,82 @@ export function TileGrid({ color, tiles, start, today, weekStart, size = 'year',
 
   return (
     // Focusable so keyboard and switch-control users can scroll long histories.
-    <div ref={scrollRef} className="no-scrollbar -mx-1 overflow-x-auto px-1" tabIndex={0} role="group" aria-label={label}>
-      <svg
-        width={width}
-        height={height}
-        role="img"
-        aria-label={`${label}: ${filled} of ${days.length} days filled.`}
-        className="block select-none"
-        style={{ touchAction: 'pan-x pan-y', WebkitTouchCallout: 'none' }}
-        onContextMenu={(e) => e.preventDefault()}
-        onPointerDown={
-          interactive
-            ? (e) => {
-                const svg = e.currentTarget;
-                const { clientX, clientY } = e;
-                press.current = { x: clientX, y: clientY, fired: false };
-                if (onLongPress) {
-                  press.current.timer = setTimeout(() => {
-                    const d = dateAt(svg, clientX, clientY);
-                    if (d && press.current) {
-                      press.current.fired = true;
-                      onLongPress(d);
-                    }
-                  }, LONG_PRESS_MS);
+    <div
+      ref={scrollRef}
+      className={`no-scrollbar ${fit ? '' : '-mx-1 overflow-x-auto px-1'}`}
+      tabIndex={fit ? undefined : 0}
+      role="group"
+      aria-label={label}
+      style={measuring ? { height: offY + 7 * (dim.tile + gap) - gap } : undefined}
+    >
+      {!measuring && (
+        <svg
+          width={width}
+          height={height}
+          role="img"
+          aria-label={`${label}: ${filled} of ${days.length} days filled.`}
+          className="block select-none"
+          style={{ touchAction: 'pan-x pan-y', WebkitTouchCallout: 'none' }}
+          onContextMenu={(e) => e.preventDefault()}
+          onPointerDown={
+            interactive
+              ? (e) => {
+                  const svg = e.currentTarget;
+                  const { clientX, clientY } = e;
+                  press.current = { x: clientX, y: clientY, fired: false };
+                  if (onLongPress) {
+                    press.current.timer = setTimeout(() => {
+                      const d = dateAt(svg, clientX, clientY);
+                      if (d && press.current) {
+                        press.current.fired = true;
+                        onLongPress(d);
+                      }
+                    }, LONG_PRESS_MS);
+                  }
                 }
-              }
-            : undefined
-        }
-        onPointerMove={(e) => {
-          const p = press.current;
-          if (p && Math.hypot(e.clientX - p.x, e.clientY - p.y) > 8) {
-            clearTimeout(p.timer);
-            press.current = null;
+              : undefined
           }
-        }}
-        onPointerUp={(e) => {
-          const p = press.current;
-          press.current = null;
-          if (!p) return;
-          clearTimeout(p.timer);
-          if (p.fired || !onTap) return;
-          const d = dateAt(e.currentTarget, e.clientX, e.clientY);
-          if (d) onTap(d);
-        }}
-        onPointerCancel={() => {
-          clearTimeout(press.current?.timer);
-          press.current = null;
-        }}
-      >
-        {labels && (
-          <g className="fill-[rgb(var(--label-2)/var(--label-2-alpha))] text-[10px]" aria-hidden>
-            {monthLabels.map((m) => (
-              <text key={m.x} x={m.x} y={11}>
-                {m.text}
-              </text>
-            ))}
-            {[1, 3, 5].map((row) => (
-              <text key={row} x={0} y={offY + row * step + tile - 4}>
-                {formatDay(shiftDate(gridStart, row), 'EEEEE')}
-              </text>
-            ))}
-          </g>
-        )}
-        {months.map(([k, cells]) => (
-          <Month key={k} cells={cells} sig={signature(cells)} color={color} tile={tile} step={step} offX={offX} offY={offY} mode={mode} />
-        ))}
-      </svg>
+          onPointerMove={(e) => {
+            const p = press.current;
+            if (p && Math.hypot(e.clientX - p.x, e.clientY - p.y) > 8) {
+              clearTimeout(p.timer);
+              press.current = null;
+            }
+          }}
+          onPointerUp={(e) => {
+            const p = press.current;
+            press.current = null;
+            if (!p) return;
+            clearTimeout(p.timer);
+            if (p.fired || !onTap) return;
+            const d = dateAt(e.currentTarget, e.clientX, e.clientY);
+            if (d) onTap(d);
+          }}
+          onPointerCancel={() => {
+            clearTimeout(press.current?.timer);
+            press.current = null;
+          }}
+        >
+          {labels && (
+            <g className="fill-[rgb(var(--label-2)/var(--label-2-alpha))] text-[10px]" aria-hidden>
+              {monthLabels.map((m) => (
+                // A label too close to the right edge is right-aligned so it isn't clipped.
+                <text key={m.x} x={m.x + 28 > width ? width : m.x} y={11} textAnchor={m.x + 28 > width ? 'end' : 'start'}>
+                  {m.text}
+                </text>
+              ))}
+              {[1, 3, 5].map((row) => (
+                <text key={row} x={0} y={offY + row * step + tile - 4}>
+                  {formatDay(shiftDate(gridStart, row), 'EEEEE')}
+                </text>
+              ))}
+            </g>
+          )}
+          {months.map(([k, cells]) => (
+            <Month key={k} cells={cells} sig={signature(cells)} color={color} tile={tile} step={step} offX={offX} offY={offY} mode={mode} />
+          ))}
+        </svg>
+      )}
     </div>
   );
 }

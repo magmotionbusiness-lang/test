@@ -4,5 +4,5 @@
  */
 export function confirmAction(message: string): boolean {
   if (import.meta.env.VITE_PREVIEW === 'true') return true;
-  return confirmAction(message);
+  return window.confirm(message);
 }
