@@ -148,3 +148,26 @@ function encodeWav(buf: AudioBuffer): Blob {
   for (let i = 0; i < samples.length; i++) v.setInt16(44 + i * 2, Math.max(-1, Math.min(1, samples[i]!)) * 0x7fff, true);
   return new Blob([bytes], { type: 'audio/wav' });
 }
+
+/** Short UI sounds for tapping Done: a bright two-note "pop" for completing, a soft tick for +1. */
+export function playTapSound(kind: 'done' | 'tick'): void {
+  const c = context();
+  if (!c) return;
+  if (c.state !== 'running') void c.resume();
+  const t0 = c.currentTime + 0.005;
+  const notes = kind === 'done' ? [880, 1318.5] : [740];
+  notes.forEach((freq, i) => {
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = 'sine';
+    const t = t0 + i * 0.07;
+    osc.frequency.setValueAtTime(freq * 0.9, t);
+    osc.frequency.exponentialRampToValueAtTime(freq, t + 0.03);
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(kind === 'done' ? 0.16 : 0.08, t + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + (kind === 'done' ? 0.22 : 0.09));
+    osc.connect(gain).connect(c.destination);
+    osc.start(t);
+    osc.stop(t + 0.3);
+  });
+}

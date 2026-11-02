@@ -5,7 +5,7 @@ const require = createRequire(import.meta.url);
 // Playwright is preinstalled globally in the build container; not a project dependency.
 const { chromium } = require(process.env.PLAYWRIGHT_PATH ?? 'playwright');
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { iconSvg } from './icon.mjs';
+import { iconSvg, logoSvg, MATTE } from './icon.mjs';
 
 const root = new URL('../public/', import.meta.url);
 mkdirSync(new URL('icons/', root), { recursive: true });
@@ -60,10 +60,9 @@ for (const [cw, ch, dpr, ipad] of DEVICES) {
     for (const scheme of ['light', 'dark']) {
       const w = (o === 'portrait' ? cw : ch) * dpr;
       const h = (o === 'portrait' ? ch : cw) * dpr;
-      const bg = scheme === 'dark' ? '#000000' : '#F2F2F7';
+      // Same matte + logo in both schemes; the in-app intro starts from exactly this frame.
       const icon = Math.round(Math.min(w, h) * 0.22);
-      const html = `<div style="width:${w}px;height:${h}px;background:${bg};display:flex;align-items:center;justify-content:center">
-        <div style="width:${icon}px;height:${icon}px;border-radius:${icon * 0.225}px;overflow:hidden">${iconSvg({ size: icon })}</div></div>`;
+      const html = `<div style="width:${w}px;height:${h}px;background:${MATTE};display:flex;align-items:center;justify-content:center">${logoSvg(icon)}</div>`;
       const file = `splash/${w}x${h}-${scheme}.png`;
       await render(html, w, h, file);
       links.push(

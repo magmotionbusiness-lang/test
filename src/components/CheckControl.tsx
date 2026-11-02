@@ -1,6 +1,9 @@
 import { motion } from 'framer-motion';
-import { Check, Minus, Plus } from 'lucide-react';
-import { useRef } from 'react';
+import { Minus, Plus } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { rewardTap } from '@/lib/feedback';
+import { Burst } from './Burst';
+import { DrawnCheck } from './DrawnCheck';
 import { spring } from '@/app/motion';
 import type { Entry, Habit } from '@/db/types';
 import { progressOf } from '@/domain/logging';
@@ -27,6 +30,14 @@ export function CheckControl({ habit, entry, onTap, onLongPress }: Props) {
   const color = colorVar(habit.color);
   const timer = useRef<ReturnType<typeof setTimeout>>();
   const longPressed = useRef(false);
+  const [fire, setFire] = useState(0);
+  const wasDone = useRef(done);
+
+  // Burst on every transition to done (tap, swipe, amount sheet), never on first render.
+  useEffect(() => {
+    if (done && !wasDone.current) setFire((f) => f + 1);
+    wasDone.current = done;
+  }, [done]);
 
   const size = 40;
   const r = 18;
@@ -64,12 +75,16 @@ export function CheckControl({ habit, entry, onTap, onLongPress }: Props) {
       onClick={(e) => {
         e.stopPropagation();
         if (longPressed.current) return;
+        // Sound and vibration must start inside the tap itself (iOS rule).
+        if (!done && (habit.type === 'check' || habit.type === 'avoid')) rewardTap('done');
+        else if (!done && habit.type === 'count') rewardTap((entry?.value ?? 0) + 1 >= habit.target ? 'done' : 'tick');
         onTap();
       }}
       aria-label={label}
       aria-pressed={done}
       className="relative -mr-1.5 flex h-12 w-12 shrink-0 items-center justify-center"
     >
+      <Burst fire={fire} color={color} />
       <svg width={size} height={size} className="-rotate-90" aria-hidden>
         <circle
           cx={size / 2}
@@ -109,8 +124,8 @@ export function CheckControl({ habit, entry, onTap, onLongPress }: Props) {
       </svg>
       <span className="absolute inset-0 flex items-center justify-center" aria-hidden>
         {done ? (
-          <motion.span initial={{ scale: 0.4 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 600, damping: 18 }}>
-            <Check size={22} strokeWidth={3.2} className="text-white" />
+          <motion.span initial={{ scale: 0.4 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 600, damping: 14 }}>
+            <DrawnCheck size={22} className="text-white" />
           </motion.span>
         ) : skipped ? (
           <Minus size={18} strokeWidth={2.8} style={{ color }} />

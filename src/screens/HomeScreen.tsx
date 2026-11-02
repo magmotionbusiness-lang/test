@@ -1,4 +1,4 @@
-import { useLiveQuery } from 'dexie-react-hooks';
+import { useCachedLiveQuery } from '@/app/useCachedLiveQuery';
 import { Plus } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
@@ -48,15 +48,19 @@ export function HomeScreen() {
     prevDate.current = date;
   }, [date]);
 
-  const data = useLiveQuery(async () => {
-    const [habits, sections, entries, goals] = await Promise.all([
-      db.habits.filter((h) => !h.archived).toArray(),
-      db.sections.toArray(),
-      db.entries.where('date').between(shiftDate(today, -STREAK_WINDOW), today, true, true).toArray(),
-      db.goals.where('status').equals('active').toArray(),
-    ]);
-    return { habits, sections, entries, goals };
-  }, [today]);
+  const data = useCachedLiveQuery(
+    `home:${today}`,
+    async () => {
+      const [habits, sections, entries, goals] = await Promise.all([
+        db.habits.filter((h) => !h.archived).toArray(),
+        db.sections.toArray(),
+        db.entries.where('date').between(shiftDate(today, -STREAK_WINDOW), today, true, true).toArray(),
+        db.goals.where('status').equals('active').toArray(),
+      ]);
+      return { habits, sections, entries, goals };
+    },
+    [today],
+  );
 
   const groups = useMemo(() => (data ? todayGroups(data.habits, data.entries, date, settings.weekStart) : []), [data, date, settings.weekStart]);
   const all = groups.flatMap((g) => g.items);
@@ -194,11 +198,16 @@ export function HomeScreen() {
 
         {all.length > 0 && <p className="mb-6 px-4 text-center text-footnote text-secondary">Swipe right to complete · Swipe left to skip</p>}
 
-        <Appear
-          show={Boolean(data && data.habits.length > 0 && (!isToday || new Date().getHours() >= 17 || (all.length > 0 && doneCount === all.length)))}
-        >
-          <DailyCheckIn date={date} title={isToday ? 'Daily check-in' : `Check-in · ${formatDay(date, 'EEEE')}`} />
-        </Appear>
+        {data && (
+          // Mounted only once data is ready, so the card appears in place on open and only animates on real changes.
+          <Appear
+            show={Boolean(
+              data && data.habits.length > 0 && (!isToday || new Date().getHours() >= 17 || (all.length > 0 && doneCount === all.length)),
+            )}
+          >
+            <DailyCheckIn date={date} title={isToday ? 'Daily check-in' : `Check-in · ${formatDay(date, 'EEEE')}`} />
+          </Appear>
+        )}
       </FadeSwap>
 
       {data && data.habits.length > 0 && isToday && (

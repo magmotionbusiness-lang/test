@@ -4,9 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { Stack } from './Stack';
 import { useApplyAccent, useApplyTheme } from './theme';
 import { useAppBadge } from './useAppBadge';
+import { setTapSoundEnabled } from '@/lib/feedback';
 import { useSettings } from './useSettings';
 import { TabBar } from '@/components/TabBar';
 import { ToastHost } from '@/components/Toast';
+import { Intro } from '@/components/Intro';
 import { InstallGuide, isIosSafari } from '@/components/InstallGuide';
 import { updateSettings } from '@/db/repo';
 import { db } from '@/db/db';
@@ -41,6 +43,7 @@ export function App() {
   useApplyTheme(settings.theme);
   useApplyAccent(settings.accent);
   useAppBadge(settings);
+  useEffect(() => setTapSoundEnabled(settings.tapSound !== false), [settings.tapSound]);
   const [installOpen, setInstallOpen] = useState(false);
   const navigate = useNavigate();
   // undefined while loading, so returning users never see onboarding flash.
@@ -78,6 +81,7 @@ export function App() {
       )}
       <ToastHost />
       <InstallGuide open={installOpen} onClose={closeInstall} />
+      {import.meta.env.VITE_PREVIEW !== 'true' && <Intro />}
     </div>
   );
 }

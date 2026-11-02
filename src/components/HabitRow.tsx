@@ -5,6 +5,7 @@ import type { Entry, Habit } from '@/db/types';
 import type { Streak } from '@/domain/streaks';
 import { formatStreak } from '@/domain/streaks';
 import { CheckControl } from './CheckControl';
+import { rewardTap } from '@/lib/feedback';
 
 interface Props {
   habit: Habit;
@@ -53,7 +54,10 @@ export function HabitRow({ habit, entry, sectionColor, streak, onTap, onLongPres
     const dx = info.offset.x + (open ? -ACTIONS_WIDTH : 0);
     if (dx > COMPLETE_THRESHOLD) {
       settle(0);
-      if (!done) onComplete();
+      if (!done) {
+        rewardTap('done');
+        onComplete();
+      }
     } else if (dx < -ACTIONS_WIDTH / 2 || info.velocity.x < -400) settle(-ACTIONS_WIDTH);
     else settle(0);
   };

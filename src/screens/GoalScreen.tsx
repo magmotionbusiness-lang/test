@@ -215,14 +215,14 @@ export function GoalScreen() {
                     tiles={buildTiles(
                       h,
                       (data.entries ?? []).filter((e) => e.habitId === h.id),
-                      shiftDate(today, -83),
+                      shiftDate(today, -370),
                       today,
                     )}
-                    start={shiftDate(today, -83)}
+                    start={shiftDate(today, -370)}
                     today={today}
                     weekStart={settings.weekStart}
                     size="compact"
-                    label={`${h.name}, last 12 weeks`}
+                    label={`${h.name}, recent weeks`}
                   />
                 </span>
               </button>

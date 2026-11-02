@@ -135,7 +135,7 @@ export function SectionScreen() {
           <TileGrid
             color={color}
             tiles={stats.grid}
-            start={shiftDate(today, -181)}
+            start={shiftDate(today, -370)}
             today={today}
             weekStart={settings.weekStart}
             mode="intensity"
@@ -271,7 +271,7 @@ function computeStats(habits: Habit[], entries: Entry[], today: string, weekStar
   const own = entries.filter((e) => ids.has(e.habitId));
   const weekly = weeklyConsistency(habits, own, 26, today, weekStart);
   return {
-    grid: dailyShare(habits, own, shiftDate(today, -181), today, weekStart),
+    grid: dailyShare(habits, own, shiftDate(today, -370), today, weekStart),
     week: rollingWeek(habits, own, today, weekStart),
     weekly: weekly.map((w) => ({ label: `Week of ${formatDay(w.weekStart, 'd MMM')}`, tick: formatDay(w.weekStart, 'MMM'), value: w.score })),
     weekdays: order.map((d) => ({ label: WEEKDAY[d]!, tick: WEEKDAY[d]!.slice(0, 2), value: wd[d] ?? null })),
@@ -313,7 +313,7 @@ function HabitRowCompact({
   onAmount: (h: Habit) => void;
 }) {
   // 26 weeks requested; the grid shows as many whole weeks as fit the row.
-  const start = shiftDate(today, -181);
+  const start = shiftDate(today, -370);
   const tiles = useMemo(
     () =>
       buildTiles(
@@ -356,7 +356,7 @@ function HabitRowCompact({
             today={today}
             weekStart={weekStart}
             size="compact"
-            label={`${habit.name}, last 12 weeks`}
+            label={`${habit.name}, recent weeks`}
           />
         </button>
       )}

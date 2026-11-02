@@ -133,6 +133,8 @@ export interface Settings {
   installGuideSeen: boolean;
   /** Show today's remaining habit count on the Home Screen icon. */
   appBadge?: boolean;
+  /** Short pop when tapping Done (default on). */
+  tapSound?: boolean;
   /** Play a sound when every habit due today is done (default on). */
   completionSound?: boolean;
   /** Display name of the user's own completion sound, if they chose one. */

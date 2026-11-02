@@ -26,10 +26,13 @@ interface Props {
   fit?: boolean;
 }
 
-const DIM: Record<GridSize, { tile: number; gap: number; labels: boolean; min: number; max: number }> = {
-  compact: { tile: 12, gap: 3, labels: false, min: 10, max: 22 },
-  year: { tile: 17, gap: 3, labels: true, min: 14, max: 24 },
+/** `tile` is the natural size; fitted grids pick the week count closest to `target` and stretch tiles to fill. */
+const DIM: Record<GridSize, { tile: number; gap: number; labels: boolean; target: number }> = {
+  compact: { tile: 12, gap: 3, labels: false, target: 16 },
+  year: { tile: 17, gap: 3, labels: true, target: 19 },
 };
+/** Room around the tiles so today's outline ring is never clipped. */
+const INSET = 2;
 const LABEL_W = 22;
 const LABEL_H = 18;
 const LONG_PRESS_MS = 450;
@@ -65,8 +68,8 @@ export function TileGrid({
 }: Props) {
   const dim = DIM[size];
   const { gap, labels } = dim;
-  const offX = labels ? LABEL_W : 0;
-  const offY = labels ? LABEL_H : 0;
+  const offX = (labels ? LABEL_W : 0) + INSET;
+  const offY = (labels ? LABEL_H : 0) + INSET;
   const scrollRef = useRef<HTMLDivElement>(null);
   const prev = useRef<Map<LocalDate, Tile> | null>(null);
   const [boxWidth, setBoxWidth] = useState(0);
@@ -85,16 +88,18 @@ export function TileGrid({
   let tile = dim.tile;
   let gridStart = fullStart;
   if (fit && boxWidth > 0) {
-    const avail = boxWidth - offX;
-    const shown = Math.max(1, Math.min(allCols, Math.floor((avail + gap) / (dim.min + gap))));
+    // Whole weeks only, ending with this week, tiles stretched to fill the width exactly.
+    const avail = boxWidth - offX - INSET;
+    const shown = Math.max(1, Math.round((avail + gap) / (dim.target + gap)));
     gridStart = shiftDate(fullStart, (allCols - shown) * 7);
-    tile = Math.max(dim.min, Math.min(dim.max, Math.floor((avail - (shown - 1) * gap) / shown)));
+    tile = (avail - (shown - 1) * gap) / shown;
   }
-  const start = requestedStart > gridStart ? requestedStart : gridStart;
+  // A fitted grid always shows complete weeks (days before a habit started draw as quiet tiles).
+  const start = fit ? gridStart : requestedStart > gridStart ? requestedStart : gridStart;
   const step = tile + gap;
   const cols = Math.floor(daysBetween(gridStart, today) / 7) + 1;
-  const width = offX + cols * step - gap;
-  const height = offY + 7 * step - gap;
+  const width = offX + cols * step - gap + INSET;
+  const height = offY + 7 * step - gap + INSET;
 
   const { months, monthLabels } = useMemo(() => {
     const before = prev.current;
@@ -176,7 +181,7 @@ export function TileGrid({
       tabIndex={fit ? undefined : 0}
       role="group"
       aria-label={label}
-      style={measuring ? { height: offY + 7 * (dim.tile + gap) - gap } : undefined}
+      style={measuring ? { height: offY + 7 * (dim.target + gap) - gap + INSET } : undefined}
     >
       {!measuring && (
         <svg
@@ -235,7 +240,7 @@ export function TileGrid({
                 </text>
               ))}
               {[1, 3, 5].map((row) => (
-                <text key={row} x={0} y={offY + row * step + tile - 4}>
+                <text key={row} x={INSET} y={offY + row * step + tile - 4}>
                   {formatDay(shiftDate(gridStart, row), 'EEEEE')}
                 </text>
               ))}

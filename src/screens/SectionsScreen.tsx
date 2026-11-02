@@ -1,4 +1,4 @@
-import { useLiveQuery } from 'dexie-react-hooks';
+import { useCachedLiveQuery } from '@/app/useCachedLiveQuery';
 import { ChevronRight, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -23,17 +23,21 @@ export function SectionsScreen() {
   const settings = useSettings();
   const today = todayFn();
 
-  const data = useLiveQuery(async () => {
-    const [sections, habits, entries] = await Promise.all([
-      db.sections
-        .orderBy('order')
-        .filter((s) => !s.archived)
-        .toArray(),
-      db.habits.filter((h) => !h.archived).toArray(),
-      db.entries.where('date').between(shiftDate(today, -90), today, true, true).toArray(),
-    ]);
-    return { sections, habits, entries };
-  }, [today]);
+  const data = useCachedLiveQuery(
+    `sections:${today}`,
+    async () => {
+      const [sections, habits, entries] = await Promise.all([
+        db.sections
+          .orderBy('order')
+          .filter((s) => !s.archived)
+          .toArray(),
+        db.habits.filter((h) => !h.archived).toArray(),
+        db.entries.where('date').between(shiftDate(today, -370), today, true, true).toArray(),
+      ]);
+      return { sections, habits, entries };
+    },
+    [today],
+  );
 
   return (
     <Page
@@ -102,13 +106,13 @@ export function SectionsScreen() {
                   <div className="mt-3">
                     <TileGrid
                       color={colorVar(s.color)}
-                      tiles={dailyShare(habits, data.entries, shiftDate(today, -83), today, settings.weekStart)}
-                      start={shiftDate(today, -83)}
+                      tiles={dailyShare(habits, data.entries, shiftDate(today, -370), today, settings.weekStart)}
+                      start={shiftDate(today, -370)}
                       today={today}
                       weekStart={settings.weekStart}
                       size="compact"
                       mode="intensity"
-                      label={`${s.name}, last 12 weeks`}
+                      label={`${s.name}, recent weeks`}
                     />
                   </div>
                 )}

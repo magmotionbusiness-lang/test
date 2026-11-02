@@ -22,7 +22,7 @@ interface Props {
 /** The "whole picture" cards under the Today list. */
 export function HomeOverview({ habits, entries, goals, today, weekStart }: Props) {
   const navigate = useNavigate();
-  const start = shiftDate(today, -181);
+  const start = shiftDate(today, -370);
   const grid = useMemo(() => dailyShare(habits, entries, start, today, weekStart), [habits, entries, start, today, weekStart]);
   const week = useMemo(() => rollingWeek(habits, entries, today, weekStart), [habits, entries, today, weekStart]);
   const leaders = useMemo(
@@ -48,7 +48,7 @@ export function HomeOverview({ habits, entries, goals, today, weekStart }: Props
       <h2 className="mb-1.5 px-4 text-footnote uppercase text-secondary">The whole picture</h2>
       <Card className="mb-3">
         <div className="mb-3 flex items-baseline justify-between">
-          <h3 className="text-headline">Last 26 weeks</h3>
+          <h3 className="text-headline">Recent weeks</h3>
           <span className="text-footnote text-secondary">Share of habits done each day</span>
         </div>
         <TileGrid

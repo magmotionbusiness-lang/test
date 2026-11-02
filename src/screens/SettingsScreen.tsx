@@ -165,10 +165,13 @@ export function SettingsScreen() {
       </ListGroup>
 
       <ListGroup
-        header="Completion sound"
+        header="Sounds"
         footer="Plays once when every habit due today is done. Pick any audio file or a screen recording; only its sound is kept, trimmed and stored on this device. With the ringer switch on silent, iPhone may stay quiet."
       >
-        <FieldRow label="Play a sound">
+        <FieldRow label="Pop when tapping Done">
+          <Toggle checked={settings.tapSound !== false} onChange={(tapSound) => updateSettings({ tapSound })} label="Pop when tapping Done" />
+        </FieldRow>
+        <FieldRow label="Sound when all done">
           <Toggle
             checked={settings.completionSound !== false}
             onChange={(completionSound) => updateSettings({ completionSound })}

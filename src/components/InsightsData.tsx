@@ -37,7 +37,7 @@ export function InsightsData({ payload, habits, sections, entries, from, to, tod
   const sectionByName = useMemo(() => new Map(sections.map((s) => [s.name, s])), [sections]);
 
   const daily = useMemo(() => dailyShare(active, entries, from, to, weekStart), [active, entries, from, to, weekStart]);
-  const gridStart = shiftDate(today, -181);
+  const gridStart = shiftDate(today, -370);
   const grid = useMemo(() => dailyShare(active, entries, gridStart, today, weekStart), [active, entries, gridStart, today, weekStart]);
   // Short periods say little about weekdays, so fall back to the last 90 days.
   const wdFrom = days >= 14 ? from : shiftDate(today, -89);
@@ -216,7 +216,7 @@ export function InsightsData({ payload, habits, sections, entries, from, to, tod
       </Card>
 
       <Card>
-        <h3 className="mb-3 text-headline">Last 26 weeks</h3>
+        <h3 className="mb-3 text-headline">Recent weeks</h3>
         <TileGrid
           color="rgb(var(--success))"
           tiles={grid}
@@ -224,7 +224,7 @@ export function InsightsData({ payload, habits, sections, entries, from, to, tod
           today={today}
           weekStart={weekStart}
           mode="intensity"
-          label="Daily completion, last 26 weeks"
+          label="Daily completion, recent weeks"
         />
       </Card>
     </div>
