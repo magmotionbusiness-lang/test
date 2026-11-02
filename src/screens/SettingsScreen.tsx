@@ -132,6 +132,8 @@ export function SettingsScreen() {
     } else toast('iOS needs notification permission for badges. Allow it in iOS Settings → Habit Hub → Notifications');
   };
 
+  const reduceMotionOn = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   const backupAge = settings.lastBackupAt ? Math.floor((Date.now() - Date.parse(settings.lastBackupAt)) / 86_400_000) : null;
 
   return (
@@ -167,6 +169,23 @@ export function SettingsScreen() {
             ]}
           />
         </div>
+        <div className="px-4 py-3">
+          <div className="mb-2 text-body">Animations</div>
+          <Segmented<'full' | 'system'>
+            label="Animations"
+            value={settings.motion ?? 'full'}
+            onChange={(motion) => updateSettings({ motion })}
+            options={[
+              { value: 'full', label: 'Full' },
+              { value: 'system', label: 'Follow iOS' },
+            ]}
+          />
+          <p className="mt-2 text-footnote text-secondary">
+            {reduceMotionOn
+              ? 'Reduce Motion is on in iOS. “Follow iOS” turns slides and confetti off; “Full” keeps them.'
+              : '“Follow iOS” turns slides and confetti off whenever Reduce Motion is on in iOS.'}
+          </p>
+        </div>
         <div className="pt-3">
           <div className="flex items-center gap-3 px-4">
             <IconTile color="#FF2D55">
@@ -180,7 +199,7 @@ export function SettingsScreen() {
 
       <ListGroup
         header="Sounds"
-        footer="Plays once when every habit due today is done. Pick any audio file or a screen recording; only its sound is kept, trimmed and stored on this device. With the ringer switch on silent, iPhone may stay quiet."
+        footer="Your sound plays when the last habit of the day is done (or on every Done, if you choose), even with the ringer on silent. Pick any audio file or a screen recording; only its sound is kept, trimmed and stored on this device."
       >
         <FieldRow label="Pop when tapping Done">
           <Toggle checked={settings.tapSound !== false} onChange={(tapSound) => updateSettings({ tapSound })} label="Pop when tapping Done" />
@@ -193,6 +212,20 @@ export function SettingsScreen() {
           />
         </FieldRow>
         <ListRow title="Sound" detail={settings.completionSoundName ?? 'Built-in chime'} />
+        {settings.completionSoundName && (
+          <div className="px-4 py-3">
+            <div className="mb-2 text-body">Play my sound</div>
+            <Segmented<'all' | 'each'>
+              label="Play my sound"
+              value={settings.customSoundOn ?? 'all'}
+              onChange={(customSoundOn) => updateSettings({ customSoundOn })}
+              options={[
+                { value: 'all', label: 'When all done' },
+                { value: 'each', label: 'Every Done' },
+              ]}
+            />
+          </div>
+        )}
         <ListRow
           title={<span className="text-accent">{busy === 'sound' ? 'Preparing sound…' : 'Choose your own sound…'}</span>}
           onClick={busy ? undefined : () => soundRef.current?.click()}

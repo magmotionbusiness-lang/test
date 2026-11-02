@@ -133,6 +133,10 @@ export interface Settings {
   installGuideSeen: boolean;
   /** Show today's remaining habit count on the Home Screen icon. */
   appBadge?: boolean;
+  /** 'full' (default) always animates; 'system' follows iOS Reduce Motion. */
+  motion?: 'full' | 'system';
+  /** When the user's own sound plays: when everything is done (default) or on every completed habit. */
+  customSoundOn?: 'all' | 'each';
   /** Short pop when tapping Done (default on). */
   tapSound?: boolean;
   /** Play a sound when every habit due today is done (default on). */

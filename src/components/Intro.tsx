@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
 /** Matches scripts/icon.mjs (MATTE and the logo geometry), so the iOS launch screen hands over seamlessly. */
@@ -14,7 +14,7 @@ const KEY = 'hh-intro-shown';
  * launch (sessionStorage resets when iOS starts the app fresh), not on resume.
  */
 export function Intro() {
-  const reduced = useReducedMotion();
+  const reduced = useReducedMotionConfig();
   const [show, setShow] = useState(() => {
     try {
       return !sessionStorage.getItem(KEY);

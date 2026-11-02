@@ -47,10 +47,38 @@ async function loadCustom(c: AudioContext): Promise<AudioBuffer | null> {
   return custom;
 }
 
+type AudioSessionNavigator = Navigator & { audioSession?: { type: string } };
+
+/**
+ * iPhone's silent switch mutes web audio unless the page asks for "playback"
+ * audio (Safari 16.4+). Ask only while the completion sound plays, then hand
+ * back, so taps stay quiet on silent and other apps' audio isn't held.
+ */
+function withPlaybackSession(seconds: number): void {
+  const session = (navigator as AudioSessionNavigator).audioSession;
+  if (!session) return;
+  try {
+    session.type = 'playback';
+    setTimeout(
+      () => {
+        try {
+          session.type = 'auto';
+        } catch {
+          /* ignore */
+        }
+      },
+      (seconds + 0.3) * 1000,
+    );
+  } catch {
+    /* older Safari: plays as before */
+  }
+}
+
 /** Plays the user's sound if they chose one, otherwise a short built-in chime. */
 export async function playCompletionSound(): Promise<void> {
   const c = context();
   if (!c) return;
+  withPlaybackSession(MAX_SECONDS);
   if (c.state !== 'running') await c.resume().catch(() => undefined);
   const buffer = await loadCustom(c);
   if (buffer) {

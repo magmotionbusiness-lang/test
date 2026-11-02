@@ -118,3 +118,10 @@ Judgment calls made while building, newest at the bottom of each phase.
 - **Smoothness over immediacy**: heavy content (grids, charts, statistics, history) renders only after the slide finishes, then fades up (`<Defer>`). Section statistics and the habit calendar are computed after the slide too. All screen code preloads 1.5 s after launch, so no tap waits on a download.
 - **No end-of-transition flashes**: animations stay in Motion's own frame loop (an `onUpdate` handler opts out of the browser's built-in animations), which removed a one-frame flash of the old page and a one-frame blink of the new one. Verified frame by frame for tab switches, push and pop.
 - The back-swipe drag moved to an inner layer so it never fights the transition.
+
+## After launch — feedback round 6
+
+- **Animations default to on.** Motion previously followed iOS Reduce Motion, which skipped every slide, so screens appeared instantly on the user's phone. Settings → Animations now has **Full** (default) and **Follow iOS**; the CSS tile animations follow the same setting.
+- **Celebration lives in the app shell**, not just Home. It fires on the transition to "everything due today is done" from any screen (section page, habit page, Home, swipe), never just because the app opened with everything already done, and can fire again after an undo.
+- **Completion sound plays on silent**: while it plays, Safari's Audio Session is set to "playback" (Safari 16.4+), then handed back to "auto", so tap pops still respect the ringer switch and other apps' audio isn't held.
+- **Play my sound: When all done / Every Done** (shown once a custom sound is chosen). With "Every Done", the user's sound replaces the pop on each completed habit and the all-done celebration stays silent to avoid playing it twice.

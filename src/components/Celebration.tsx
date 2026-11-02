@@ -1,39 +1,26 @@
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { LocalDate } from '@/db/types';
 import { playCompletionSound } from '@/lib/sound';
 
-const KEY = 'hh-celebrated';
 const COLORS = ['var(--c-green)', 'var(--c-blue)', 'var(--c-orange)', 'var(--c-pink)', 'var(--c-purple)', 'var(--c-yellow)', 'var(--c-teal)'];
 
 /**
- * A tasteful, once-a-day celebration when every habit due today is done:
- * a soft glow and a short burst of confetti (glow only with reduced motion).
+ * Celebration when the last habit due today gets done — from any screen:
+ * a soft glow, a burst of confetti and the completion sound. Bump `fire` to
+ * play it (the app shell does this on the transition to all-done).
  */
-export function Celebration({ allDone, date, sound = true }: { allDone: boolean; date: LocalDate; sound?: boolean }) {
+export function Celebration({ fire, sound = true }: { fire: number; sound?: boolean }) {
   const [show, setShow] = useState(false);
-  const reduced = useReducedMotion();
+  const reduced = useReducedMotionConfig();
 
   useEffect(() => {
-    if (!allDone) return;
-    let seen: string | null = null;
-    try {
-      seen = localStorage.getItem(KEY);
-    } catch {
-      /* storage unavailable: celebrate anyway */
-    }
-    if (seen === date) return;
-    try {
-      localStorage.setItem(KEY, date);
-    } catch {
-      /* ignore */
-    }
+    if (fire === 0) return;
     setShow(true);
     if (sound) void playCompletionSound();
     const t = setTimeout(() => setShow(false), 2600);
     return () => clearTimeout(t);
-  }, [allDone, date, sound]);
+  }, [fire, sound]);
 
   return createPortal(
     <AnimatePresence>

@@ -152,8 +152,8 @@
   animation: tile-ripple 0.42s ease-out both;
 }
 @media (prefers-reduced-motion: reduce) {
-  .tile-pop,
-  .tile-ripple {
+  :root[data-motion='system'] .tile-pop,
+  :root[data-motion='system'] .tile-ripple {
     animation: none;
   }
 }

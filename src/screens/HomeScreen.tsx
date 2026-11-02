@@ -24,7 +24,6 @@ import { useFreezesLeft } from '@/app/useFreezes';
 import { FreezeOffer } from '@/components/FreezeOffer';
 import { HomeOverview } from '@/components/HomeOverview';
 import { BackupReminder } from '@/components/BackupReminder';
-import { Celebration } from '@/components/Celebration';
 import { DailyCheckIn } from '@/components/DailyCheckIn';
 import { TIME_OF_DAY_LABEL, todayGroups } from '@/domain/today';
 import { colorVar } from '@/lib/colors';
@@ -215,8 +214,6 @@ export function HomeScreen() {
           <HomeOverview habits={data.habits} entries={data.entries} goals={data.goals} today={today} weekStart={settings.weekStart} />
         </Defer>
       )}
-
-      <Celebration allDone={isToday && all.length > 0 && doneCount === all.length} date={today} sound={settings.completionSound !== false} />
 
       <AmountSheet
         habit={amountFor}

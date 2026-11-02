@@ -1,4 +1,4 @@
-import { playTapSound } from './sound';
+import { playCompletionSound, playTapSound } from './sound';
 
 /**
  * Tap feedback for finishing a habit: a light vibration plus a short sound.
@@ -7,9 +7,11 @@ import { playTapSound } from './sound';
  */
 
 let soundOn = true;
+let ownSoundEachDone = false;
 /** Kept in sync with Settings by the app shell. */
-export function setTapSoundEnabled(on: boolean): void {
-  soundOn = on;
+export function setFeedbackPrefs(prefs: { tapSound: boolean; ownSoundEachDone: boolean }): void {
+  soundOn = prefs.tapSound;
+  ownSoundEachDone = prefs.ownSoundEachDone;
 }
 
 let hapticLabel: HTMLLabelElement | null = null;
@@ -42,5 +44,7 @@ export function haptic(): void {
 /** Feedback for a tap that completes a habit ('done') or only adds progress ('tick'). */
 export function rewardTap(kind: 'done' | 'tick'): void {
   haptic();
-  if (soundOn) playTapSound(kind);
+  // With "Play my sound: on every Done", the user's own sound replaces the pop.
+  if (kind === 'done' && ownSoundEachDone) void playCompletionSound();
+  else if (soundOn) playTapSound(kind);
 }

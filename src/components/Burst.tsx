@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotionConfig } from 'framer-motion';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -11,7 +11,7 @@ const N = 12;
  * control's position, so rows and cards that clip overflow don't cut it off.
  */
 export function Burst({ fire, color }: { fire: number; color: string }) {
-  const reduced = useReducedMotion();
+  const reduced = useReducedMotionConfig();
   const anchor = useRef<HTMLSpanElement>(null);
   const [rect, setRect] = useState<DOMRect | null>(null);
 

@@ -1,10 +1,12 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { MotionConfig } from 'framer-motion';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Stack } from './Stack';
 import { useApplyAccent, useApplyTheme } from './theme';
-import { useAppBadge } from './useAppBadge';
-import { setTapSoundEnabled } from '@/lib/feedback';
+import { useAppBadge, useTodayProgress } from './useAppBadge';
+import { Celebration } from '@/components/Celebration';
+import { setFeedbackPrefs } from '@/lib/feedback';
 import { useSettings } from './useSettings';
 import { TabBar } from '@/components/TabBar';
 import { ToastHost } from '@/components/Toast';
@@ -43,7 +45,28 @@ export function App() {
   useApplyTheme(settings.theme);
   useApplyAccent(settings.accent);
   useAppBadge(settings);
-  useEffect(() => setTapSoundEnabled(settings.tapSound !== false), [settings.tapSound]);
+  useEffect(
+    () =>
+      setFeedbackPrefs({
+        tapSound: settings.tapSound !== false,
+        ownSoundEachDone: settings.customSoundOn === 'each' && Boolean(settings.completionSoundName),
+      }),
+    [settings.tapSound, settings.customSoundOn, settings.completionSoundName],
+  );
+  useEffect(() => {
+    document.documentElement.dataset.motion = settings.motion ?? 'full';
+  }, [settings.motion]);
+
+  // Celebrate the moment the last habit due today is done, wherever that happened.
+  // Only real transitions count: opening the app with everything already done stays quiet.
+  const progress = useTodayProgress(settings.weekStart);
+  const prevOpen = useRef<number | null>(null);
+  const [celebrate, setCelebrate] = useState(0);
+  useEffect(() => {
+    if (!progress) return;
+    if (progress.due > 0 && progress.open === 0 && prevOpen.current !== null && prevOpen.current > 0) setCelebrate((n) => n + 1);
+    prevOpen.current = progress.open;
+  }, [progress]);
   const [installOpen, setInstallOpen] = useState(false);
   const navigate = useNavigate();
   // undefined while loading, so returning users never see onboarding flash.
@@ -84,19 +107,23 @@ export function App() {
   };
 
   return (
-    <div className="relative h-full overflow-hidden">
-      <main className="absolute inset-0">
-        <Stack routes={ROUTES} />
-      </main>
-      <TabBar />
-      {firstRun && (
-        <Suspense fallback={null}>
-          <Onboarding onFinish={(next) => (next === 'goal' ? navigate('/goals', { state: { newGoal: true } }) : navigate('/'))} />
-        </Suspense>
-      )}
-      <ToastHost />
-      <InstallGuide open={installOpen} onClose={closeInstall} />
-      {import.meta.env.VITE_PREVIEW !== 'true' && <Intro />}
-    </div>
+    // Animations are on by default; "Follow iOS" in Settings honours Reduce Motion instead.
+    <MotionConfig reducedMotion={settings.motion === 'system' ? 'user' : 'never'}>
+      <div className="relative h-full overflow-hidden">
+        <main className="absolute inset-0">
+          <Stack routes={ROUTES} />
+        </main>
+        <TabBar />
+        {firstRun && (
+          <Suspense fallback={null}>
+            <Onboarding onFinish={(next) => (next === 'goal' ? navigate('/goals', { state: { newGoal: true } }) : navigate('/'))} />
+          </Suspense>
+        )}
+        <ToastHost />
+        <InstallGuide open={installOpen} onClose={closeInstall} />
+        <Celebration fire={celebrate} sound={settings.completionSound !== false && settings.customSoundOn !== 'each'} />
+        {import.meta.env.VITE_PREVIEW !== 'true' && <Intro />}
+      </div>
+    </MotionConfig>
   );
 }

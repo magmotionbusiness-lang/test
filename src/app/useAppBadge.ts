@@ -16,6 +16,19 @@ export function badgeSupported(): boolean {
  * iOS web apps can only update it while the app is open, so it refreshes on
  * every change and whenever the app comes back to the foreground.
  */
+/** Habits due today and how many are still open; undefined while loading. */
+export function useTodayProgress(weekStart: 0 | 1): { due: number; open: number } | undefined {
+  const today = todayFn();
+  return useLiveQuery(async () => {
+    const [habits, entries] = await Promise.all([
+      db.habits.filter((h) => !h.archived).toArray(),
+      db.entries.where('date').between(shiftDate(today, -31), today, true, true).toArray(),
+    ]);
+    const items = todayGroups(habits, entries, today, weekStart).flatMap((g) => g.items);
+    return { due: items.length, open: items.filter((i) => !i.completed).length };
+  }, [weekStart, today]);
+}
+
 export function useAppBadge(settings: Settings): void {
   const today = todayFn();
   const remaining = useLiveQuery(async () => {
