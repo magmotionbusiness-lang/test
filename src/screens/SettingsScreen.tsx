@@ -102,6 +102,20 @@ export function SettingsScreen() {
     }
   };
 
+  // Drops the cached app files (never your data, which lives in IndexedDB) and reloads,
+  // so the newest published version is fetched fresh.
+  const onCheckUpdates = async () => {
+    setBusy('update');
+    try {
+      const reg = await navigator.serviceWorker?.getRegistration();
+      await reg?.update().catch(() => undefined);
+      if ('caches' in window) await Promise.all((await caches.keys()).map((k) => caches.delete(k)));
+      await reg?.unregister();
+    } finally {
+      window.location.reload();
+    }
+  };
+
   const onBadgeToggle = async (on: boolean) => {
     if (!on) {
       await updateSettings({ appBadge: false });
@@ -333,6 +347,10 @@ export function SettingsScreen() {
           title="Version"
           subtitle={window.location.host}
           detail={`${__APP_VERSION__} · ${formatBuild(__BUILD_TIME__)}`}
+        />
+        <ListRow
+          title={<span className="text-accent">{busy === 'update' ? 'Checking…' : 'Check for updates'}</span>}
+          onClick={busy ? undefined : onCheckUpdates}
         />
       </ListGroup>
 
