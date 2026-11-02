@@ -328,7 +328,8 @@ export function SettingsScreen() {
             </IconTile>
           }
           title="Version"
-          detail={__APP_VERSION__}
+          subtitle={window.location.host}
+          detail={`${__APP_VERSION__} · ${formatBuild(__BUILD_TIME__)}`}
         />
       </ListGroup>
 
@@ -389,4 +390,9 @@ function PayloadPreview({ open, onClose }: { open: boolean; onClose: () => void 
       )}
     </Sheet>
   );
+}
+
+/** Build stamp in the viewer's local time, e.g. "2 Nov, 22:10". */
+function formatBuild(iso: string): string {
+  return new Date(iso).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 }

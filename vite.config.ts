@@ -7,7 +7,11 @@ import pkg from './package.json' with { type: 'json' };
 // `vite build --mode artifact` makes a single-page preview (no service worker,
 // one inlined bundle) for viewing on claude.ai; see scripts/inline-preview.mjs.
 export default defineConfig(({ mode }) => ({
-  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    // Shown in Settings so it's easy to tell which build a device is running.
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+  },
   base: mode === 'artifact' ? './' : '/',
   build:
     mode === 'artifact'
