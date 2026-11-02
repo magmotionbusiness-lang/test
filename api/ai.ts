@@ -60,7 +60,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return send(502, {
         ok: false,
         code: 'upstream',
-        error: msg.includes('abort') ? 'The AI took too long to answer.' : 'The AI service is unavailable right now.',
+        error: msg.includes('abort') ? 'The AI took too long to answer.' : explainGeminiError(msg),
       });
     }
     const check = validate(text, schema);
@@ -107,4 +107,34 @@ function validate(text: string, schema: ZodTypeAny) {
   }
   const r = schema.safeParse(value);
   return r.success ? { ok: true as const, value: r.data } : { ok: false as const, error: r.error.message };
+}
+
+/**
+ * Turns Gemini's error into a plain explanation the user can act on (the key
+ * itself is never echoed). Unknown errors include Google's own short message.
+ */
+function explainGeminiError(raw: string): string {
+  const status = Number(raw.match(/Gemini HTTP (\d+)/)?.[1] ?? 0);
+  let reason = '';
+  try {
+    const body = JSON.parse(raw.slice(raw.indexOf('{'))) as { error?: { status?: string; message?: string } };
+    reason = `${body.error?.status ?? ''} ${body.error?.message ?? ''}`.trim();
+  } catch {
+    reason = raw.replace(/^Gemini HTTP \d+:\s*/, '');
+  }
+  reason = reason.replace(/AIza[\w-]{20,}|AQ\.[\w-]{20,}/g, '[key]').slice(0, 180);
+  const r = reason.toLowerCase();
+  if (r.includes('api key not valid') || r.includes('api_key_invalid') || r.includes('invalid api key'))
+    return 'Google says the API key isn’t valid. Copy the key again from Google AI Studio into GEMINI_API_KEY on Vercel (no spaces or quotes), then redeploy.';
+  if (r.includes('location is not supported') || r.includes('user location'))
+    return 'Google says Gemini isn’t available for this account’s region without billing. Turn on billing for the key in Google AI Studio, then try again.';
+  if (r.includes('billing') || r.includes('free tier'))
+    return 'Google says billing needs to be set up for this key. Finish billing in Google AI Studio, then try again.';
+  if (status === 403 || r.includes('permission_denied') || r.includes('referer') || r.includes('blocked'))
+    return `Google refused the key (permission denied). If the key has website or app restrictions in Google Cloud, remove them. Details: ${reason}`;
+  if (status === 429 || r.includes('resource_exhausted') || r.includes('quota'))
+    return 'Google’s quota for this key is used up for now. Try again later, or raise the quota/billing in Google AI Studio.';
+  if (status === 404 || r.includes('not found'))
+    return `Google couldn’t find the AI model. Check or remove GEMINI_MODEL on Vercel. Details: ${reason}`;
+  return `The AI service returned an error (${status || 'network'}). Details: ${reason || 'none'}`;
 }

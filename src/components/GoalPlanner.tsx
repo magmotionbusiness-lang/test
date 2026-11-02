@@ -200,7 +200,7 @@ export function GoalPlanner({ open, onClose, onManual, onCreated }: Props) {
       ) : step === 'input' ? (
         <>
           <FormGroup footer="Be specific: a number and a date work best, e.g. “Bench 100 kg by June”.">
-            <TextField label="Goal" value={goal} onChange={setGoal} placeholder="What do you want to achieve?" maxLength={200} autoFocus />
+            <TextField label="Goal" value={goal} onChange={setGoal} placeholder="What do you want to achieve?" maxLength={200} />
             <label className="flex min-h-[44px] items-center gap-3 px-4">
               <span className="flex-1 text-body">Deadline</span>
               <input

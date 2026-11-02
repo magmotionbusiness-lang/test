@@ -125,3 +125,8 @@ Judgment calls made while building, newest at the bottom of each phase.
 - **Celebration lives in the app shell**, not just Home. It fires on the transition to "everything due today is done" from any screen (section page, habit page, Home, swipe), never just because the app opened with everything already done, and can fire again after an undo.
 - **Completion sound plays on silent**: while it plays, Safari's Audio Session is set to "playback" (Safari 16.4+), then handed back to "auto", so tap pops still respect the ringer switch and other apps' audio isn't held.
 - **Play my sound: When all done / Every Done** (shown once a custom sound is chosen). With "Every Done", the user's sound replaces the pop on each completed habit and the all-done celebration stays silent to avoid playing it twice.
+
+## After launch — feedback round 7
+
+- **Sheets follow the keyboard**: sheets size themselves to the visual viewport (the area above the on-screen keyboard), keep the page pinned, and scroll the focused field into view after the keyboard opens. Long forms (new habit, section, goal, goal planner) no longer focus a field automatically, because iOS opening the keyboard mid-slide scrolled the field out of view. Quick sheets (amount, note) still focus immediately.
+- **AI errors say what's wrong**: the function translates Gemini's error into a plain instruction (invalid key, billing/region, key restrictions, quota, unknown model) and otherwise includes Google's own short message, with any key redacted.

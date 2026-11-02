@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useDragControls, type PanInfo } from 'framer-m
 import { useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { pageSpring } from '@/app/motion';
+import { useVisualViewport } from '@/lib/useVisualViewport';
 
 interface SheetProps {
   open: boolean;
@@ -15,6 +16,8 @@ interface SheetProps {
 /** iOS-style bottom sheet with a grab handle and drag-to-dismiss. */
 export function Sheet({ open, onClose, title, action, children }: SheetProps) {
   const drag = useDragControls();
+  const viewport = useVisualViewport(open);
+  const keyboardOpen = viewport !== null && viewport.height < window.innerHeight - 80;
 
   useEffect(() => {
     if (!open) return;
@@ -30,7 +33,14 @@ export function Sheet({ open, onClose, title, action, children }: SheetProps) {
   return createPortal(
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={title}>
+        // Sized to the visible area, so with the keyboard up the sheet sits right above it.
+        <div
+          className="fixed inset-x-0 top-0 z-50"
+          style={{ top: viewport?.top ?? 0, height: viewport?.height ?? '100%' }}
+          role="dialog"
+          aria-modal="true"
+          aria-label={title}
+        >
           <motion.div
             className="absolute inset-0 bg-black/40"
             initial={{ opacity: 0 }}
@@ -39,7 +49,7 @@ export function Sheet({ open, onClose, title, action, children }: SheetProps) {
             onClick={onClose}
           />
           <motion.div
-            className="absolute inset-x-0 bottom-0 mx-auto flex max-h-[92dvh] max-w-content flex-col rounded-t-[14px] bg-bg pb-safe"
+            className={`absolute inset-x-0 bottom-0 mx-auto flex max-w-content flex-col rounded-t-[14px] bg-bg ${keyboardOpen ? 'max-h-full' : 'max-h-[92%] pb-safe'}`}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -61,7 +71,16 @@ export function Sheet({ open, onClose, title, action, children }: SheetProps) {
                 <div className="flex min-w-[60px] justify-end">{action}</div>
               </div>
             </div>
-            <div className="overflow-y-auto overscroll-contain px-4 pb-6 pt-2">{children}</div>
+            <div
+              className="overflow-y-auto overscroll-contain px-4 pb-6 pt-2"
+              // Once the keyboard has opened (and the sheet resized), bring the field being typed in into view.
+              onFocusCapture={(e) => {
+                const el = e.target as HTMLElement;
+                if (el.matches('input, textarea, select')) setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 350);
+              }}
+            >
+              {children}
+            </div>
           </motion.div>
         </div>
       )}

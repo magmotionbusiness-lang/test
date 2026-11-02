@@ -83,7 +83,7 @@ export function GoalForm({ open, onClose, goal, onCreated }: Props) {
       }
     >
       <FormGroup>
-        <TextField label="Goal" value={title} onChange={setTitle} placeholder="Goal, e.g. Bench 100 kg" autoFocus={!goal} />
+        <TextField label="Goal" value={title} onChange={setTitle} placeholder="Goal, e.g. Bench 100 kg" />
         <TextField label="Why" value={why} onChange={setWhy} placeholder="Why it matters" maxLength={200} />
         <label className="flex min-h-[44px] items-center gap-3 px-4">
           <span className="flex-1 text-body">Deadline</span>

@@ -145,7 +145,7 @@ export function HabitForm({ open, onClose, habit, sectionId }: Props) {
       }
     >
       <FormGroup>
-        <TextField label="Name" value={d.name} onChange={(v) => set('name', v)} placeholder="Name, e.g. Read" autoFocus={!habit} />
+        <TextField label="Name" value={d.name} onChange={(v) => set('name', v)} placeholder="Name, e.g. Read" />
         <EmojiField value={d.emoji} onChange={(v) => set('emoji', v)} />
       </FormGroup>
 

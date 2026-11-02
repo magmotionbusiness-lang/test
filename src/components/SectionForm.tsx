@@ -57,7 +57,7 @@ export function SectionForm({ open, onClose, section }: Props) {
       }
     >
       <FormGroup>
-        <TextField label="Name" value={name} onChange={setName} placeholder="Name, e.g. Gym" autoFocus={!section} />
+        <TextField label="Name" value={name} onChange={setName} placeholder="Name, e.g. Gym" />
         <EmojiField value={emoji} onChange={setEmoji} />
         <TextField label="Description" value={description} onChange={setDescription} placeholder="Description (optional)" maxLength={80} />
       </FormGroup>
