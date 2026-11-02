@@ -133,6 +133,16 @@ export interface Settings {
   installGuideSeen: boolean;
   /** Show today's remaining habit count on the Home Screen icon. */
   appBadge?: boolean;
+  /** Play a sound when every habit due today is done (default on). */
+  completionSound?: boolean;
+  /** Display name of the user's own completion sound, if they chose one. */
+  completionSoundName?: string | null;
   lastBackupAt: ISODateTime | null;
+  updatedAt: ISODateTime;
+}
+
+export interface StoredBlob {
+  id: string;
+  blob: Blob;
   updatedAt: ISODateTime;
 }

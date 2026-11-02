@@ -205,7 +205,7 @@ export function HomeScreen() {
         <HomeOverview habits={data.habits} entries={data.entries} goals={data.goals} today={today} weekStart={settings.weekStart} />
       )}
 
-      <Celebration allDone={isToday && all.length > 0 && doneCount === all.length} date={today} />
+      <Celebration allDone={isToday && all.length > 0 && doneCount === all.length} date={today} sound={settings.completionSound !== false} />
 
       <AmountSheet
         habit={amountFor}

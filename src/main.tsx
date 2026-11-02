@@ -4,6 +4,7 @@ import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
 import { App } from './app/App';
 import { paletteCss } from './lib/colors';
+import { installAudioUnlock } from './lib/sound';
 import './styles/index.css';
 
 const style = document.createElement('style');
@@ -26,6 +27,8 @@ function applyDynamicType() {
 }
 applyDynamicType();
 document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && applyDynamicType());
+
+installAudioUnlock();
 
 // Ask iOS/Safari not to evict our IndexedDB under storage pressure.
 void navigator.storage?.persist?.().catch(() => undefined);

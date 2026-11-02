@@ -70,7 +70,8 @@ export function parseBackup(text: string): z.infer<typeof backupSchema> {
 export async function importBackup(backup: z.infer<typeof backupSchema>): Promise<ImportSummary> {
   const d = backup.data;
   await db.transaction('rw', db.tables, async () => {
-    await Promise.all(db.tables.map((t) => t.clear()));
+    // Keep the user's own files (e.g. their completion sound); backups don't carry them.
+    await Promise.all(db.tables.filter((t) => t.name !== 'blobs').map((t) => t.clear()));
     await db.sections.bulkPut(d.sections as never[]);
     await db.habits.bulkPut(d.habits as never[]);
     await db.entries.bulkPut(d.entries as never[]);

@@ -97,3 +97,9 @@ Judgment calls made while building, newest at the bottom of each phase.
 - **Motion everywhere**: rows glide when a finished habit sinks to the bottom; switching days, Insights periods, Year/Month and months cross-fades with a slide in the direction of travel; the check-in card expands in; chart bars grow and lines draw in; progress bars glide; the Done button morphs between states. All of it respects Reduce Motion.
 - **Rolling 7 days** replaces "this week" on Home, the section page and section cards, matching Insights.
 - **Bug fix**: the confirmation helper introduced for the preview build called itself, so confirmed actions (delete, erase, load demo over existing data, import) crashed instead of asking. Fixed, with a unit test.
+
+## After launch — feedback round 3
+
+- **Completion sound**: plays once when every habit due today is done, alongside the celebration. A synthesised chime is the default, so the app ships no audio files. Users can pick their own sound (any audio file or a screen recording) in Settings; the app decodes it, trims silence, caps it at 8 s and stores a small WAV on the device. Copyrighted sounds stay on the user's device and never go into the repository or the public deployment.
+- **Audio on iOS** uses Web Audio, unlocked on the first tap, because the sound fires from a data update rather than directly from a tap. With the ringer switch on silent, iOS may mute it.
+- **Schema v2** adds a `blobs` store for user files. Purely additive, with a migration test that v1 data survives. Backups don't include the sound; importing a backup keeps it.

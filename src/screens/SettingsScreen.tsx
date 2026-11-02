@@ -6,6 +6,7 @@ import { useLocation } from 'react-router-dom';
 import { aiUsage } from '@/ai/client';
 import { useSettings } from '@/app/useSettings';
 import { badgeSupported } from '@/app/useAppBadge';
+import { clearCustomSound, playCompletionSound, setCustomSound } from '@/lib/sound';
 import { db } from '@/db/db';
 import { backupFileName, exportBackup, importBackup, parseBackup, saveFile } from '@/db/backup';
 import { loadDemoData } from '@/db/demo';
@@ -27,6 +28,7 @@ export function SettingsScreen() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const soundRef = useRef<HTMLInputElement>(null);
   const usage = useLiveQuery(() => aiUsage(), [settings.aiCallsToday, settings.aiCallsDate, settings.aiDailyLimit]);
 
   useEffect(() => {
@@ -81,6 +83,22 @@ export function SettingsScreen() {
       window.alert(e instanceof Error ? e.message : 'Import failed.');
     } finally {
       if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+
+  const onSoundFile = async (file: File | undefined) => {
+    if (!file) return;
+    setBusy('sound');
+    try {
+      await setCustomSound(file);
+      await updateSettings({ completionSoundName: file.name.replace(/\.[^.]+$/, '') });
+      void playCompletionSound();
+      toast('Completion sound saved');
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'Couldn’t use that file');
+    } finally {
+      setBusy(null);
+      if (soundRef.current) soundRef.current.value = '';
     }
   };
 
@@ -145,6 +163,44 @@ export function SettingsScreen() {
           <ColorPicker value={settings.accent} onChange={(accent) => updateSettings({ accent })} />
         </div>
       </ListGroup>
+
+      <ListGroup
+        header="Completion sound"
+        footer="Plays once when every habit due today is done. Pick any audio file or a screen recording; only its sound is kept, trimmed and stored on this device. With the ringer switch on silent, iPhone may stay quiet."
+      >
+        <FieldRow label="Play a sound">
+          <Toggle
+            checked={settings.completionSound !== false}
+            onChange={(completionSound) => updateSettings({ completionSound })}
+            label="Play a sound"
+          />
+        </FieldRow>
+        <ListRow title="Sound" detail={settings.completionSoundName ?? 'Built-in chime'} />
+        <ListRow
+          title={<span className="text-accent">{busy === 'sound' ? 'Preparing sound…' : 'Choose your own sound…'}</span>}
+          onClick={busy ? undefined : () => soundRef.current?.click()}
+        />
+        <ListRow title={<span className="text-accent">Play it now</span>} onClick={() => void playCompletionSound()} />
+        {settings.completionSoundName && (
+          <ListRow
+            title={<span className="text-accent">Use the built-in chime</span>}
+            onClick={async () => {
+              await clearCustomSound();
+              await updateSettings({ completionSoundName: null });
+              toast('Back to the built-in chime');
+            }}
+          />
+        )}
+      </ListGroup>
+      <input
+        ref={soundRef}
+        type="file"
+        accept="audio/*,video/*,.m4a,.mp3,.wav,.aac,.mov,.mp4"
+        className="hidden"
+        aria-hidden
+        tabIndex={-1}
+        onChange={(e) => void onSoundFile(e.target.files?.[0])}
+      />
 
       <ListGroup
         header="App icon"

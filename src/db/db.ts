@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { AIReview, DailyNote, Entry, Goal, Habit, Section, Settings } from './types';
+import type { AIReview, DailyNote, Entry, Goal, Habit, Section, Settings, StoredBlob } from './types';
 
 /**
  * Local IndexedDB store. Screens never touch this directly — they go through
@@ -16,6 +16,8 @@ export class HabitHubDB extends Dexie {
   goals!: Table<Goal, string>;
   aiReviews!: Table<AIReview, string>;
   settings!: Table<Settings, string>;
+  /** Small files the user adds, e.g. their completion sound. */
+  blobs!: Table<StoredBlob, string>;
 
   constructor(name = 'habit-hub') {
     super(name);
@@ -28,6 +30,8 @@ export class HabitHubDB extends Dexie {
       aiReviews: 'id, &inputHash, scope, rangeStart, updatedAt',
       settings: 'id',
     });
+    // v2: adds a store for user files. Purely additive, so existing data is untouched.
+    this.version(2).stores({ blobs: 'id' });
   }
 }
 
