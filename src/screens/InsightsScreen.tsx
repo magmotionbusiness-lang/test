@@ -9,14 +9,15 @@ import { useSettings } from '@/app/useSettings';
 import { db } from '@/db/db';
 import type { AIReview, LocalDate } from '@/db/types';
 import { Page } from '@/components/Page';
+import { InsightsData } from '@/components/InsightsData';
 import { ErrorCard, ReviewCards, SkeletonCards } from '@/components/ReviewCards';
 import { Sheet } from '@/components/Sheet';
 import { EmptyState, ListGroup, ListRow, PrimaryButton, Segmented } from '@/components/ui';
 import { buildReviewPayload } from '@/domain/aggregate';
-import { daysBetween, formatDay, shiftDate, today as todayFn, weekStartOf } from '@/domain/dates';
+import { daysBetween, formatDay, shiftDate, today as todayFn } from '@/domain/dates';
 
 type Range = 'day' | 'week' | 'month' | 'custom';
-const RANGE_LABEL: Record<Range, string> = { day: 'Today', week: 'This week', month: 'This month', custom: 'Custom range' };
+const RANGE_LABEL: Record<Range, string> = { day: 'Today', week: 'Last 7 days', month: 'Last 30 days', custom: 'Custom range' };
 const MAX_CUSTOM_DAYS = 92;
 
 export function InsightsScreen() {
@@ -40,12 +41,13 @@ export function InsightsScreen() {
 
   const { from, to } = useMemo(() => {
     if (range === 'day') return { from: today, to: today };
-    if (range === 'week') return { from: weekStartOf(today, settings.weekStart), to: today };
-    if (range === 'month') return { from: `${today.slice(0, 7)}-01`, to: today };
+    // Rolling windows, so a Monday or the 1st of the month still has data to show.
+    if (range === 'week') return { from: shiftDate(today, -6), to: today };
+    if (range === 'month') return { from: shiftDate(today, -29), to: today };
     const a = customFrom <= customTo ? customFrom : customTo;
     const b = customFrom <= customTo ? customTo : customFrom;
     return { from: daysBetween(a, b) >= MAX_CUSTOM_DAYS ? shiftDate(b, -(MAX_CUSTOM_DAYS - 1)) : a, to: b > today ? today : b };
-  }, [range, today, settings.weekStart, customFrom, customTo]);
+  }, [range, today, customFrom, customTo]);
 
   const days = daysBetween(from, to) + 1;
   const data = useLiveQuery(async () => {
@@ -114,7 +116,7 @@ export function InsightsScreen() {
   return (
     <Page title="Insights">
       <Segmented
-        label="Review range"
+        label="Period"
         value={range}
         onChange={(r) => {
           setRange(r);
@@ -122,8 +124,8 @@ export function InsightsScreen() {
         }}
         options={[
           { value: 'day', label: 'Today' },
-          { value: 'week', label: 'Week' },
-          { value: 'month', label: 'Month' },
+          { value: 'week', label: '7 days' },
+          { value: 'month', label: '30 days' },
           { value: 'custom', label: 'Custom' },
         ]}
       />
@@ -151,9 +153,30 @@ export function InsightsScreen() {
         )}
       </div>
 
-      <div className="mt-4">
+      {payload && data && (
+        <div className="mt-4">
+          <InsightsData
+            payload={payload}
+            habits={data.habits}
+            sections={data.sections}
+            entries={data.entries}
+            from={from}
+            to={to}
+            today={today}
+            weekStart={settings.weekStart}
+            sectionId={sectionId}
+          />
+        </div>
+      )}
+
+      {payload && (
+        <h2 className="mb-1.5 mt-8 flex items-center gap-1.5 px-4 text-footnote uppercase text-secondary">
+          <Sparkles size={13} aria-hidden /> AI coach
+        </h2>
+      )}
+      <div className={payload ? '' : 'mt-4'}>
         {data && data.habits.length === 0 ? (
-          <EmptyState title="Nothing to review yet" message="Add a few habits and log some days — your coach will have plenty to say." />
+          <EmptyState title="Nothing here yet" message="Add a few habits and log some days. Your numbers, charts and AI reviews will show up here." />
         ) : status.kind === 'loading' ? (
           <SkeletonCards />
         ) : shown ? (
@@ -174,7 +197,7 @@ export function InsightsScreen() {
         ) : !online ? (
           <ErrorCard offline message="AI reviews need a connection. Your past reviews below are still available." />
         ) : (
-          <div className="flex flex-col items-center px-6 py-10 text-center">
+          <div className="flex flex-col items-center rounded-card bg-bg-2 px-6 py-8 text-center shadow-card">
             <div
               className="mb-3 flex h-14 w-14 items-center justify-center rounded-full"
               style={{ background: 'linear-gradient(135deg, var(--c-indigo), var(--c-purple))' }}

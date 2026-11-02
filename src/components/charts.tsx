@@ -105,6 +105,9 @@ export function BarChart({
   const values = data.map((d) => d.value).filter((v): v is number => v !== null);
   const best = values.length > 1 ? Math.max(...values) : null;
   const worst = values.length > 1 ? Math.min(...values) : null;
+  // Label only the first bar at the best and worst value, so ties don't stack labels.
+  const bestIndex = best === null ? -1 : data.findIndex((d) => d.value === best);
+  const worstIndex = worst === null || worst === best ? -1 : data.findIndex((d) => d.value === worst);
 
   const pick = (clientX: number) => {
     const r = ref.current?.getBoundingClientRect();
@@ -132,7 +135,7 @@ export function BarChart({
             const r = Math.min(4, bw / 2, h);
             const x0 = x(i) - bw / 2;
             const y0 = PAD.top + ih - h;
-            const isExtreme = highlightExtremes && (d.value === best || d.value === worst);
+            const isExtreme = highlightExtremes && (i === bestIndex || i === worstIndex);
             return (
               <g key={i}>
                 <path

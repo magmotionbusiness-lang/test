@@ -3,7 +3,9 @@ import { Suspense, useRef, type ReactNode } from 'react';
 import { useLocation, useNavigate, useRoutes, type RouteObject } from 'react-router-dom';
 import { pageSpring } from './motion';
 
-const TAB_ROOTS = new Set(['/', '/sections', '/goals', '/insights', '/settings']);
+/** Tab roots in tab-bar order, so tab switches slide toward the tapped tab. */
+export const TAB_ORDER = ['/', '/sections', '/insights', '/goals', '/settings'];
+const TAB_ROOTS = new Set(TAB_ORDER);
 
 /** Tab roots are depth 0; every pushed screen is one level deeper per path segment past its tab. */
 function depthOf(path: string): number {
@@ -11,12 +13,33 @@ function depthOf(path: string): number {
   return path.split('/').filter(Boolean).length - 1 || 1;
 }
 
-type Dir = 'push' | 'pop' | 'none';
+type Dir = 'push' | 'pop' | 'tab-next' | 'tab-prev' | 'none';
+
+const TAB_SHIFT = 48;
+const tabFade = { type: 'spring', stiffness: 420, damping: 40, opacity: { duration: 0.18 } } as const;
 
 const variants = {
-  enter: (dir: Dir) => (dir === 'push' ? { x: '100%' } : dir === 'pop' ? { x: '-30%' } : { x: 0 }),
-  center: { x: 0 },
-  exit: (dir: Dir) => (dir === 'push' ? { x: '-30%' } : dir === 'pop' ? { x: '100%', zIndex: 2 } : { x: 0, opacity: 0, transition: { duration: 0 } }),
+  enter: (dir: Dir) =>
+    dir === 'push'
+      ? { x: '100%', opacity: 1 }
+      : dir === 'pop'
+        ? { x: '-30%', opacity: 1 }
+        : dir === 'tab-next'
+          ? { x: TAB_SHIFT, opacity: 0 }
+          : dir === 'tab-prev'
+            ? { x: -TAB_SHIFT, opacity: 0 }
+            : { x: 0, opacity: 1 },
+  center: (dir: Dir) => ({ x: 0, opacity: 1, transition: dir === 'tab-next' || dir === 'tab-prev' ? tabFade : pageSpring }),
+  exit: (dir: Dir) =>
+    dir === 'push'
+      ? { x: '-30%', opacity: 1 }
+      : dir === 'pop'
+        ? { x: '100%', opacity: 1, zIndex: 2 }
+        : dir === 'tab-next'
+          ? { x: -TAB_SHIFT, opacity: 0, transition: tabFade }
+          : dir === 'tab-prev'
+            ? { x: TAB_SHIFT, opacity: 0, transition: tabFade }
+            : { x: 0, opacity: 0, transition: { duration: 0 } },
 };
 
 /**
@@ -32,7 +55,10 @@ export function Stack({ routes }: { routes: RouteObject[] }) {
   if (prev.current.path !== location.pathname) {
     const a = depthOf(prev.current.path);
     const b = depthOf(location.pathname);
-    prev.current = { path: location.pathname, dir: b > a ? 'push' : b < a ? 'pop' : 'none' };
+    const i = TAB_ORDER.indexOf(prev.current.path);
+    const j = TAB_ORDER.indexOf(location.pathname);
+    const dir: Dir = b > a ? 'push' : b < a ? 'pop' : i >= 0 && j >= 0 ? (j > i ? 'tab-next' : 'tab-prev') : 'none';
+    prev.current = { path: location.pathname, dir };
   }
   const dir = prev.current.dir;
   const depth = depthOf(location.pathname);

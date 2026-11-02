@@ -82,3 +82,9 @@ Judgment calls made while building, newest at the bottom of each phase.
 - **Share cards** were built in Phase 3, and export/import and the accent colour in Phase 5, next to the screens that use them.
 - **"App icon accent color"**: iOS doesn't let web apps change their Home Screen icon after install, so this setting changes the in-app accent (buttons, links, selection) instead.
 - **Reminders** (`reminderTime`) are stored but not delivered: iOS web push needs a push server, which conflicts with "no cloud backend" in v1.
+
+## After launch — feedback round 1
+
+- **Tab switches animate**: a short spring slide plus fade toward the tapped tab (left or right by tab order). Pushes and pops keep the full iOS slide.
+- **Insights is the centre tab** and the app's data hub, shown as a larger raised button in the middle of the tab bar. It shows everything for the chosen period: consistency vs the period before, done/partial/skipped/missed totals, a day-by-day chart, sections and habits ranked with changes, streaks, mood and energy, weekdays and the 26-week grid. The AI coach sits below and reads the same numbers.
+- **Insights periods are rolling** (Today, 7 days, 30 days, Custom), not calendar week and month, so they never come up empty on a Monday or the 1st.
