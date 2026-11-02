@@ -34,8 +34,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const parsed = aiRequest.safeParse(body);
   if (!parsed.success) return send(400, { ok: false, code: 'bad-request', error: 'Unknown task or malformed payload.' });
 
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) return send(503, { ok: false, code: 'not-configured', error: 'The AI coach isn’t set up yet (GEMINI_API_KEY is missing).' });
+  const key = readKey(process.env.GEMINI_API_KEY);
+  if (key === null) return send(503, { ok: false, code: 'not-configured', error: 'The AI coach isn’t set up yet (GEMINI_API_KEY is missing).' });
+  if (key === '')
+    return send(503, {
+      ok: false,
+      code: 'not-configured',
+      error:
+        'GEMINI_API_KEY on Vercel contains more than a key. Set its value to just the key from Google AI Studio (it starts with “AIza”), then redeploy.',
+    });
 
   const ip = String(req.headers['x-forwarded-for'] ?? 'unknown')
     .split(',')[0]!
@@ -137,4 +144,17 @@ function explainGeminiError(raw: string): string {
   if (status === 404 || r.includes('not found'))
     return `Google couldn’t find the AI model. Check or remove GEMINI_MODEL on Vercel. Details: ${reason}`;
   return `The AI service returned an error (${status || 'network'}). Details: ${reason || 'none'}`;
+}
+
+/**
+ * The key from the environment, cleaned up: trims spaces/quotes, and if a whole
+ * command or sentence was pasted, picks out the key inside it. Returns null when
+ * unset and '' when no key can be found in what was pasted.
+ */
+function readKey(raw: string | undefined): string | null {
+  if (!raw || !raw.trim()) return null;
+  const cleaned = raw.trim().replace(/^["'`]+|["'`]+$/g, '');
+  if (/^[\w.-]+$/.test(cleaned)) return cleaned;
+  const found = raw.match(/AIza[\w-]{30,}|AQ\.[\w-]{20,}/);
+  return found ? found[0] : '';
 }

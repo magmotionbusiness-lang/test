@@ -19,6 +19,15 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon-180.png" />
     <!-- Apply the saved theme before first paint to avoid a flash. -->
     <script>
+      // The intro already played this session (e.g. the app reloaded for an update): never paint its static frame.
+      try { if (sessionStorage.getItem('hh-intro-shown')) document.documentElement.classList.add('intro-seen'); } catch (e) {}
+    </script>
+    <style>
+      .intro-seen #intro-static { display: none !important; }
+      html { background: #000; }
+      @media (prefers-color-scheme: light) { html:not([data-theme='dark']) { background: #f2f2f7; } }
+    </style>
+    <script>
       (function () {
         var pref = 'system';
         try { pref = localStorage.getItem('hh-theme') || 'system'; } catch (e) {}
@@ -97,9 +106,6 @@
         <rect x="0" y="72" width="28" height="28" rx="7.84" fill="#fff" fill-opacity="0.28"/><rect x="36" y="72" width="28" height="28" rx="7.84" fill="#fff"/><rect x="72" y="72" width="28" height="28" rx="7.84" fill="#fff"/>
       </svg>
     </div>
-    <script>
-      try { if (sessionStorage.getItem('hh-intro-shown')) document.getElementById('intro-static').remove(); } catch (e) {}
-    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
