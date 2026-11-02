@@ -1,5 +1,6 @@
 import { AnimatePresence, motion, useReducedMotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import createdBy from '@/assets/created-by.png?inline';
 
 /** Matches scripts/icon.mjs (MATTE and the logo geometry), so the iOS launch screen hands over seamlessly. */
 export const MATTE = '#3F4BDB';
@@ -71,6 +72,15 @@ export function Intro() {
               />
             ))}
           </motion.svg>
+          {/* "created by magmotion>" — same size and spot as on the iOS launch screen (scripts/generate-icons.mjs). */}
+          <motion.img
+            src={createdBy}
+            alt=""
+            className="absolute left-1/2"
+            style={{ top: 'calc(50% + 17.6vmin)', width: '25.3vmin', x: '-50%', opacity: 0.9 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          />
         </motion.div>
       )}
     </AnimatePresence>
