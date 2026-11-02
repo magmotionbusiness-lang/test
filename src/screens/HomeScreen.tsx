@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { spring } from '@/app/motion';
-import { Appear, FadeSwap } from '@/components/Fade';
+import { Appear, Defer, FadeSwap } from '@/components/Fade';
 import { useNavigate } from 'react-router-dom';
 import { db } from '@/db/db';
 import type { Habit } from '@/db/types';
@@ -211,7 +211,9 @@ export function HomeScreen() {
       </FadeSwap>
 
       {data && data.habits.length > 0 && isToday && (
-        <HomeOverview habits={data.habits} entries={data.entries} goals={data.goals} today={today} weekStart={settings.weekStart} />
+        <Defer minHeight={420}>
+          <HomeOverview habits={data.habits} entries={data.entries} goals={data.goals} today={today} weekStart={settings.weekStart} />
+        </Defer>
       )}
 
       <Celebration allDone={isToday && all.length > 0 && doneCount === all.length} date={today} sound={settings.completionSound !== false} />

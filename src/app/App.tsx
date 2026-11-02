@@ -52,6 +52,21 @@ export function App() {
     return !s?.onboardingDone && (await db.habits.count()) === 0;
   }, []);
 
+  // Warm up every screen's code shortly after launch, so the first tap into any
+  // screen slides in immediately instead of waiting for a download.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      void import('@/screens/SectionsScreen');
+      void import('@/screens/SectionScreen');
+      void import('@/screens/HabitScreen');
+      void import('@/screens/GoalsScreen');
+      void import('@/screens/GoalScreen');
+      void import('@/screens/InsightsScreen');
+      void import('@/screens/SettingsScreen');
+    }, 1500);
+    return () => clearTimeout(t);
+  }, []);
+
   // First launch in Safari (not yet installed): show the install guide once.
   useEffect(() => {
     let cancelled = false;

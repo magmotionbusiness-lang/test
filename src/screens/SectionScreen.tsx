@@ -3,6 +3,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Ellipsis, Plus, Sparkles } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTransitionSettled } from '@/app/Stack';
+import { Defer } from '@/components/Fade';
 import { useSettings } from '@/app/useSettings';
 import { db } from '@/db/db';
 import { deleteSection, reorder, updateHabit, updateSection } from '@/db/repo';
@@ -66,9 +68,11 @@ export function SectionScreen() {
 
   const active = useMemo(() => data?.habits.filter((h) => !h.archived) ?? [], [data]);
   const entries = useMemo(() => data?.entries ?? [], [data]);
+  // Statistics are the expensive part; compute them once the screen has slid in.
+  const settled = useTransitionSettled();
   const stats = useMemo(
-    () => (data ? computeStats(active, entries, today, settings.weekStart) : null),
-    [data, active, entries, today, settings.weekStart],
+    () => (data && settled ? computeStats(active, entries, today, settings.weekStart) : null),
+    [data, settled, active, entries, today, settings.weekStart],
   );
 
   if (data && !data.section) {
@@ -123,25 +127,31 @@ export function SectionScreen() {
         />
       )}
 
-      {stats && active.length > 0 && (
-        <Card className="mb-6">
-          <div className="mb-3 flex items-end justify-between gap-3">
-            <div>
-              <div className="text-footnote text-secondary">Last 7 days</div>
-              <div className="tabular text-[34px] font-bold leading-tight">{stats.week.thisWeek === null ? '—' : pct(stats.week.thisWeek)}</div>
-            </div>
-            <WeekDelta thisWeek={stats.week.thisWeek} lastWeek={stats.week.lastWeek} />
-          </div>
-          <TileGrid
-            color={color}
-            tiles={stats.grid}
-            start={shiftDate(today, -370)}
-            today={today}
-            weekStart={settings.weekStart}
-            mode="intensity"
-            label={`${section?.name} daily completion`}
-          />
-        </Card>
+      {active.length > 0 && (
+        <Defer minHeight={330}>
+          {() =>
+            stats && (
+              <Card className="mb-6">
+                <div className="mb-3 flex items-end justify-between gap-3">
+                  <div>
+                    <div className="text-footnote text-secondary">Last 7 days</div>
+                    <div className="tabular text-[34px] font-bold leading-tight">{stats.week.thisWeek === null ? '—' : pct(stats.week.thisWeek)}</div>
+                  </div>
+                  <WeekDelta thisWeek={stats.week.thisWeek} lastWeek={stats.week.lastWeek} />
+                </div>
+                <TileGrid
+                  color={color}
+                  tiles={stats.grid}
+                  start={shiftDate(today, -370)}
+                  today={today}
+                  weekStart={settings.weekStart}
+                  mode="intensity"
+                  label={`${section?.name} daily completion`}
+                />
+              </Card>
+            )
+          }
+        </Defer>
       )}
 
       {active.length > 0 && (
@@ -154,29 +164,31 @@ export function SectionScreen() {
               </button>
             )}
           </div>
-          <ReorderList
-            items={active}
-            editing={reordering}
-            onReorder={(ids) => reorder('habits', ids)}
-            className="overflow-hidden rounded-row bg-bg-2 shadow-card [&>*+*]:border-t [&>*+*]:border-[rgb(var(--separator)/0.29)]"
-            itemClassName="bg-bg-2"
-            render={(h) => (
-              <HabitRowCompact
-                habit={h}
-                entries={entries}
-                today={today}
-                weekStart={settings.weekStart}
-                reordering={reordering}
-                onOpen={() => navigate(`/habits/${h.id}`, { state: { back: section?.name } })}
-                onAmount={setAmountFor}
-              />
-            )}
-          />
+          <Defer minHeight={active.length * 150}>
+            <ReorderList
+              items={active}
+              editing={reordering}
+              onReorder={(ids) => reorder('habits', ids)}
+              className="overflow-hidden rounded-row bg-bg-2 shadow-card [&>*+*]:border-t [&>*+*]:border-[rgb(var(--separator)/0.29)]"
+              itemClassName="bg-bg-2"
+              render={(h) => (
+                <HabitRowCompact
+                  habit={h}
+                  entries={entries}
+                  today={today}
+                  weekStart={settings.weekStart}
+                  reordering={reordering}
+                  onOpen={() => navigate(`/habits/${h.id}`, { state: { back: section?.name } })}
+                  onAmount={setAmountFor}
+                />
+              )}
+            />
+          </Defer>
         </section>
       )}
 
       {stats && active.length > 0 && (
-        <>
+        <Defer>
           <h2 className="mb-1.5 px-4 text-footnote uppercase text-secondary">Analytics</h2>
           <Card className="mb-3">
             <h3 className="text-headline">Consistency over time</h3>
@@ -218,7 +230,7 @@ export function SectionScreen() {
               <Sparkles size={18} aria-hidden /> Review this section with AI
             </button>
           </div>
-        </>
+        </Defer>
       )}
 
       {section?.kind === 'gym' && stats && <GymExtras entries={entries} color={color} today={today} weekStart={settings.weekStart} habits={active} />}

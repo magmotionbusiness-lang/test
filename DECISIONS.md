@@ -110,3 +110,11 @@ Judgment calls made while building, newest at the bottom of each phase.
 - **Grids fill their card exactly**: fitted grids choose the number of whole weeks closest to a target tile size and stretch tiles (fractional sizes) to the exact width; they always start on a full week and leave 2 px for today's outline. Callers request a year of data so wide iPad layouts have enough history.
 - **Home no longer jumps on tab switch**: tab screens cache their last data and render fully formed on remount; the check-in card mounts only once data is ready, so only real changes animate. Measured: the first row's position is identical from 60 ms to 1 s after switching.
 - **Rewarding completion**: finishing a habit (Done button, Home circle, swipe) bounces the control, draws the check, bursts confetti with a glow ring (on a top layer so rows don't clip it), sweeps a sheen across the Done button, and plays a short "pop" with a light vibration. iOS web apps can't vibrate directly, so a hidden iOS 18 switch control triggers the system haptic; it does nothing on older iOS. Counting up plays a softer tick. "Pop when tapping Done" can be turned off under Settings → Sounds.
+
+## After launch — feedback round 5 (motion)
+
+- **Every level slides.** Push/pop direction now comes from the navigation itself (React Router's navigation type) instead of comparing URL depth, so section → habit, goal → habit and Home → habit all slide in like iOS, and Back/back-swipe slides out. The tab bar keeps the shorter side fade.
+- **iOS curve**: pushes use a 0.42 s tween on `cubic-bezier(0.32, 0.72, 0, 1)`; tab switches use a 0.28 s fade-and-slide.
+- **Smoothness over immediacy**: heavy content (grids, charts, statistics, history) renders only after the slide finishes, then fades up (`<Defer>`). Section statistics and the habit calendar are computed after the slide too. All screen code preloads 1.5 s after launch, so no tap waits on a download.
+- **No end-of-transition flashes**: animations stay in Motion's own frame loop (an `onUpdate` handler opts out of the browser's built-in animations), which removed a one-frame flash of the old page and a one-frame blink of the new one. Verified frame by frame for tab switches, push and pop.
+- The back-swipe drag moved to an inner layer so it never fights the transition.

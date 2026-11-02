@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
+import { useTransitionSettled } from '@/app/Stack';
 import type { ReactNode } from 'react';
 
 /**
@@ -50,5 +51,25 @@ export function Appear({ children, show = true, className }: { children: ReactNo
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+/**
+ * Holds heavy content (grids, charts, stats) back until the screen has finished
+ * sliding in, keeping the slide perfectly smooth, then fades it up into place.
+ * `minHeight` reserves roughly the content's space so nothing below jumps.
+ */
+export function Defer({ children, minHeight = 160, className }: { children: ReactNode | (() => ReactNode); minHeight?: number; className?: string }) {
+  const settled = useTransitionSettled();
+  if (!settled) return <div className={className} style={{ minHeight }} aria-hidden />;
+  return (
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: [0.25, 0.8, 0.25, 1] }}
+    >
+      {typeof children === 'function' ? children() : children}
+    </motion.div>
   );
 }

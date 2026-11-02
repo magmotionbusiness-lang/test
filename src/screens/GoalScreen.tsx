@@ -14,6 +14,7 @@ import { ActionSheet } from '@/components/ActionSheet';
 import { GoalForm } from '@/components/GoalForm';
 import { NavButton, Page } from '@/components/Page';
 import { ErrorCard, SkeletonCards } from '@/components/ReviewCards';
+import { Defer } from '@/components/Fade';
 import { TileGrid } from '@/components/TileGrid';
 import { toast } from '@/components/Toast';
 import { Card, EmptyState, ListGroup, PrimaryButton } from '@/components/ui';
@@ -199,35 +200,37 @@ export function GoalScreen() {
             <p className="text-subhead text-secondary">No habits linked yet. Edit the goal, or open a habit and link it from its Goals row.</p>
           </Card>
         ) : (
-          <div className="overflow-hidden rounded-row bg-bg-2 shadow-card [&>*+*]:border-t [&>*+*]:border-[rgb(var(--separator)/0.29)]">
-            {linked.map((h) => (
-              <button
-                key={h.id}
-                onClick={() => navigate(`/habits/${h.id}`, { state: { back: 'Goal' } })}
-                className="block w-full px-4 py-3 text-left"
-              >
-                <span className="flex items-center gap-2 text-body">
-                  <span aria-hidden>{h.emoji}</span> {h.name}
-                </span>
-                <span className="mt-2 block">
-                  <TileGrid
-                    color={colorVar(h.color)}
-                    tiles={buildTiles(
-                      h,
-                      (data.entries ?? []).filter((e) => e.habitId === h.id),
-                      shiftDate(today, -370),
-                      today,
-                    )}
-                    start={shiftDate(today, -370)}
-                    today={today}
-                    weekStart={settings.weekStart}
-                    size="compact"
-                    label={`${h.name}, recent weeks`}
-                  />
-                </span>
-              </button>
-            ))}
-          </div>
+          <Defer minHeight={linked.length * 150}>
+            <div className="overflow-hidden rounded-row bg-bg-2 shadow-card [&>*+*]:border-t [&>*+*]:border-[rgb(var(--separator)/0.29)]">
+              {linked.map((h) => (
+                <button
+                  key={h.id}
+                  onClick={() => navigate(`/habits/${h.id}`, { state: { back: 'Goal' } })}
+                  className="block w-full px-4 py-3 text-left"
+                >
+                  <span className="flex items-center gap-2 text-body">
+                    <span aria-hidden>{h.emoji}</span> {h.name}
+                  </span>
+                  <span className="mt-2 block">
+                    <TileGrid
+                      color={colorVar(h.color)}
+                      tiles={buildTiles(
+                        h,
+                        (data.entries ?? []).filter((e) => e.habitId === h.id),
+                        shiftDate(today, -370),
+                        today,
+                      )}
+                      start={shiftDate(today, -370)}
+                      today={today}
+                      weekStart={settings.weekStart}
+                      size="compact"
+                      label={`${h.name}, recent weeks`}
+                    />
+                  </span>
+                </button>
+              ))}
+            </div>
+          </Defer>
         )}
       </section>
 

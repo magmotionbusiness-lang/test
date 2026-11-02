@@ -13,7 +13,8 @@ import { ActionSheet } from '@/components/ActionSheet';
 import { AmountSheet } from '@/components/AmountSheet';
 import { DaySheet } from '@/components/DaySheet';
 import { DoneButton } from '@/components/DoneButton';
-import { FadeSwap } from '@/components/Fade';
+import { Defer, FadeSwap } from '@/components/Fade';
+import { useTransitionSettled } from '@/app/Stack';
 import { HabitForm } from '@/components/HabitForm';
 import { MonthCalendar } from '@/components/MonthCalendar';
 import { NavButton, Page } from '@/components/Page';
@@ -67,7 +68,12 @@ export function HabitScreen() {
   const habit = data?.habit;
   const entries = useMemo(() => data?.entries ?? [], [data]);
   const gridStart = habit ? (habit.startDate < shiftDate(today, -181) ? habit.startDate : shiftDate(today, -181)) : today;
-  const tiles = useMemo(() => (habit ? buildTiles(habit, entries, gridStart, today) : new Map()), [habit, entries, gridStart, today]);
+  // The calendar is built once the screen has slid in, keeping the slide smooth.
+  const settled = useTransitionSettled();
+  const tiles = useMemo(
+    () => (habit && settled ? buildTiles(habit, entries, gridStart, today) : new Map()),
+    [habit, settled, entries, gridStart, today],
+  );
 
   if (data && !habit) {
     return (
@@ -165,98 +171,102 @@ export function HabitScreen() {
         <p className="mt-1.5 text-center text-footnote text-secondary">Today · {formatDay(today, 'EEEE d MMMM')}</p>
       </div>
 
-      <Card className="mb-6">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <h2 className="text-headline">Calendar</h2>
-          <div className="w-40">
-            <Segmented
-              label="Calendar view"
-              value={view}
-              onChange={setView}
-              options={[
-                { value: 'year', label: 'Year' },
-                { value: 'month', label: 'Month' },
-              ]}
-            />
+      <Defer minHeight={720}>
+        <Card className="mb-6">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 className="text-headline">Calendar</h2>
+            <div className="w-40">
+              <Segmented
+                label="Calendar view"
+                value={view}
+                onChange={setView}
+                options={[
+                  { value: 'year', label: 'Year' },
+                  { value: 'month', label: 'Month' },
+                ]}
+              />
+            </div>
           </div>
+          <FadeSwap swapKey={view}>
+            {view === 'year' ? (
+              <TileGrid
+                color={color}
+                tiles={tiles}
+                start={gridStart}
+                today={today}
+                weekStart={settings.weekStart}
+                label={`${habit.name} calendar`}
+                onTap={onTapDay}
+                onLongPress={setDayFor}
+                fit={false}
+              />
+            ) : (
+              <MonthCalendar
+                color={color}
+                tiles={tiles}
+                start={gridStart}
+                today={today}
+                weekStart={settings.weekStart}
+                onTap={onTapDay}
+                onLongPress={setDayFor}
+              />
+            )}
+          </FadeSwap>
+          <p className="mt-3 text-caption text-secondary">
+            Tap a day to log it. Hold a day for details, notes{section?.kind === 'gym' ? ', workouts' : ''} and streak freezes.
+          </p>
+          <Legend color={color} />
+        </Card>
+
+        <div className="mb-3 grid grid-cols-3 gap-3">
+          <Stat value={streak.current} sub={unit} label="Current streak" />
+          <Stat value={streak.best} sub={unit} label="Best streak" />
+          <Stat value={total} sub="total" label="Completions" />
         </div>
-        <FadeSwap swapKey={view}>
-          {view === 'year' ? (
-            <TileGrid
-              color={color}
-              tiles={tiles}
-              start={gridStart}
-              today={today}
-              weekStart={settings.weekStart}
-              label={`${habit.name} calendar`}
-              onTap={onTapDay}
-              onLongPress={setDayFor}
-              fit={false}
-            />
-          ) : (
-            <MonthCalendar
-              color={color}
-              tiles={tiles}
-              start={gridStart}
-              today={today}
-              weekStart={settings.weekStart}
-              onTap={onTapDay}
-              onLongPress={setDayFor}
-            />
+
+        <Card className="mb-6">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 className="text-headline">Consistency</h2>
+            <div className="w-44">
+              <Segmented
+                label="Consistency window"
+                value={win}
+                onChange={setWin}
+                options={[
+                  { value: '30', label: '30d' },
+                  { value: '90', label: '90d' },
+                  { value: 'all', label: 'All' },
+                ]}
+              />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="tabular text-[40px] font-bold leading-none">{cons.score === null ? '—' : formatPercent(cons.score)}</span>
+            <span className="text-subhead text-secondary">
+              {cons.expected > 0 ? `${formatNumber(cons.earned)} of ${formatNumber(cons.expected)} expected` : 'Nothing expected yet'}
+            </span>
+          </div>
+          {qty && (
+            <div className="mt-4 grid grid-cols-3 gap-2 border-t border-[rgb(var(--separator)/0.29)] pt-3 text-center">
+              <MiniStat label="Total" value={`${formatNumber(qty.total)} ${habit.unit}`} />
+              <MiniStat label="Average" value={`${formatNumber(qty.average)} ${habit.unit}`} />
+              <MiniStat
+                label="Trend (30d)"
+                value={qty.trend === null ? '—' : `${qty.trend >= 0 ? '↑' : '↓'} ${formatPercent(Math.abs(qty.trend))}`}
+              />
+            </div>
           )}
-        </FadeSwap>
-        <p className="mt-3 text-caption text-secondary">
-          Tap a day to log it. Hold a day for details, notes{section?.kind === 'gym' ? ', workouts' : ''} and streak freezes.
-        </p>
-        <Legend color={color} />
-      </Card>
+        </Card>
 
-      <div className="mb-3 grid grid-cols-3 gap-3">
-        <Stat value={streak.current} sub={unit} label="Current streak" />
-        <Stat value={streak.best} sub={unit} label="Best streak" />
-        <Stat value={total} sub="total" label="Completions" />
-      </div>
-
-      <Card className="mb-6">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <h2 className="text-headline">Consistency</h2>
-          <div className="w-44">
-            <Segmented
-              label="Consistency window"
-              value={win}
-              onChange={setWin}
-              options={[
-                { value: '30', label: '30d' },
-                { value: '90', label: '90d' },
-                { value: 'all', label: 'All' },
-              ]}
-            />
-          </div>
-        </div>
-        <div className="flex items-baseline gap-2">
-          <span className="tabular text-[40px] font-bold leading-none">{cons.score === null ? '—' : formatPercent(cons.score)}</span>
-          <span className="text-subhead text-secondary">
-            {cons.expected > 0 ? `${formatNumber(cons.earned)} of ${formatNumber(cons.expected)} expected` : 'Nothing expected yet'}
-          </span>
-        </div>
-        {qty && (
-          <div className="mt-4 grid grid-cols-3 gap-2 border-t border-[rgb(var(--separator)/0.29)] pt-3 text-center">
-            <MiniStat label="Total" value={`${formatNumber(qty.total)} ${habit.unit}`} />
-            <MiniStat label="Average" value={`${formatNumber(qty.average)} ${habit.unit}`} />
-            <MiniStat label="Trend (30d)" value={qty.trend === null ? '—' : `${qty.trend >= 0 ? '↑' : '↓'} ${formatPercent(Math.abs(qty.trend))}`} />
-          </div>
-        )}
-      </Card>
-
-      <ListGroup header="History" footer={history.length === 0 ? 'Logged days will appear here.' : undefined}>
-        {history.slice(0, historyLimit).map((e) => (
-          <HistoryRow key={e.id} entry={e} unit={habit.unit} quantity={isQuantity(habit.type)} color={color} onClick={() => setDayFor(e.date)} />
-        ))}
-        {history.length > historyLimit && (
-          <ListRow title={<span className="text-accent">Show more</span>} onClick={() => setHistoryLimit((n) => n + 40)} />
-        )}
-      </ListGroup>
-
+        <ListGroup header="History" footer={history.length === 0 ? 'Logged days will appear here.' : undefined}>
+          {history.slice(0, historyLimit).map((e) => (
+            <HistoryRow key={e.id} entry={e} unit={habit.unit} quantity={isQuantity(habit.type)} color={color} onClick={() => setDayFor(e.date)} />
+          ))}
+          {history.length > historyLimit && (
+            <ListRow title={<span className="text-accent">Show more</span>} onClick={() => setHistoryLimit((n) => n + 40)} />
+          )}
+        </ListGroup>
+      </Defer>
       <ListGroup header="Actions">
         <ListRow
           title="Goals"
