@@ -1,6 +1,6 @@
 import { confirmAction } from '@/lib/confirm';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Check, Ellipsis, Sparkles } from 'lucide-react';
+import { Check, Ellipsis, Minus, Pencil, Plus, Sparkles } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AIError, cachedReview, callAI, hashInput, saveReview } from '@/ai/client';
@@ -12,6 +12,7 @@ import { setHabitGoalLink, updateGoal } from '@/db/repo';
 import type { Goal } from '@/db/types';
 import { ActionSheet } from '@/components/ActionSheet';
 import { GoalForm } from '@/components/GoalForm';
+import { GoalProgressSheet } from '@/components/GoalProgressSheet';
 import { NavButton, Page } from '@/components/Page';
 import { ErrorCard, SkeletonCards } from '@/components/ReviewCards';
 import { Defer } from '@/components/Fade';
@@ -20,7 +21,7 @@ import { toast } from '@/components/Toast';
 import { Card, EmptyState, ListGroup, PrimaryButton } from '@/components/ui';
 import { buildCheckinPayload } from '@/domain/aggregate';
 import { formatDay, shiftDate, today as todayFn } from '@/domain/dates';
-import { goalPace } from '@/domain/goals';
+import { goalPace, type ProgressMode } from '@/domain/goals';
 import { buildTiles } from '@/domain/score';
 import { colorVar } from '@/lib/colors';
 import { formatPercent } from '@/lib/format';
@@ -43,6 +44,7 @@ export function GoalScreen() {
   const today = todayFn();
   const [menu, setMenu] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [progressMode, setProgressMode] = useState<ProgressMode | null>(null);
   const [checkin, setCheckin] = useState<{ kind: 'idle' | 'loading' } | { kind: 'error'; message: string; offline: boolean }>({ kind: 'idle' });
 
   const data = useLiveQuery(async () => {
@@ -117,11 +119,6 @@ export function GoalScreen() {
     navigate(-1);
   };
 
-  const updateCurrent = async (delta: number) => {
-    const next = Math.round(((goal.currentValue ?? 0) + delta) * 100) / 100;
-    await updateGoal(goal.id, { currentValue: next });
-  };
-
   return (
     <Page
       title={goal.title}
@@ -153,19 +150,27 @@ export function GoalScreen() {
         </div>
         {pace.timeElapsed !== null && <p className="mt-1.5 text-caption text-secondary">{formatPercent(pace.timeElapsed)} of the time has passed</p>}
         {goal.targetValue !== null && (
-          <div className="mt-3 flex items-center gap-2">
-            <span className="flex-1 text-subhead">Update progress</span>
-            {[-1, 1].map((d) => (
+          <div className="mt-4 flex gap-2">
+            {(
+              [
+                ['remove', 'Remove', Minus],
+                ['add', 'Add', Plus],
+              ] as const
+            ).map(([m, label, Icon]) => (
               <button
-                key={d}
-                onClick={() => updateCurrent(d * stepFor(goal.targetValue!))}
-                className="h-9 min-w-[56px] rounded-full bg-[rgb(var(--fill)/0.12)] px-3 text-subhead font-semibold text-accent"
-                aria-label={`${d > 0 ? 'Add' : 'Subtract'} ${stepFor(goal.targetValue!)}`}
+                key={m}
+                onClick={() => setProgressMode(m)}
+                className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-full bg-[rgb(var(--fill)/0.12)] text-subhead font-semibold text-accent"
               >
-                {d > 0 ? '+' : '−'}
-                {stepFor(goal.targetValue!)}
+                <Icon size={18} strokeWidth={2.4} aria-hidden /> {label}
               </button>
             ))}
+            <button
+              onClick={() => setProgressMode('set')}
+              className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-full bg-[rgb(var(--fill)/0.12)] text-subhead font-semibold text-accent"
+            >
+              <Pencil size={16} strokeWidth={2.4} aria-hidden /> Set
+            </button>
           </div>
         )}
       </Card>
@@ -308,13 +313,7 @@ export function GoalScreen() {
         ]}
       />
       <GoalForm open={editOpen} onClose={() => setEditOpen(false)} goal={goal} />
+      <GoalProgressSheet goal={goal} mode={progressMode} onClose={() => setProgressMode(null)} />
     </Page>
   );
-}
-
-function stepFor(target: number): number {
-  if (target >= 1000) return 50;
-  if (target >= 100) return 2.5;
-  if (target >= 20) return 1;
-  return target >= 5 ? 0.5 : 0.1;
 }

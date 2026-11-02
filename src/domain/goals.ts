@@ -43,3 +43,29 @@ export function goalPace(goal: Goal, habits: Habit[], entries: Entry[], today: L
   const overdue = daysLeft !== null && daysLeft < 0;
   return { progress, timeElapsed, habitPace, daysLeft, status: habitsBehind || progressBehind || overdue ? 'behind' : 'on-track' };
 }
+
+export type ProgressMode = 'add' | 'remove' | 'set';
+
+/** The goal's new current value after adding, removing or setting an amount. Never below zero; rounded to 2 decimals. */
+export function applyProgress(current: number | null, mode: ProgressMode, amount: number): number {
+  const base = current ?? 0;
+  const next = mode === 'add' ? base + amount : mode === 'remove' ? base - amount : amount;
+  return Math.max(0, Math.round(next * 100) / 100);
+}
+
+/**
+ * Handy one-tap amounts for a goal's target: "nice" numbers (1, 2, 5 × 10ⁿ)
+ * between about 1% and 25% of the target, at most five. Whole-number targets
+ * get whole-number amounts.
+ */
+export function quickAmounts(target: number): number[] {
+  if (!(target > 0)) return [1, 5, 10];
+  const whole = Number.isInteger(target) && target >= 3;
+  const nice: number[] = [];
+  for (let e = -2; e <= 9; e++) for (const m of [1, 2, 5]) nice.push(Number((m * 10 ** e).toPrecision(3)));
+  const pick = (hi: number) => nice.filter((n) => n >= target / 100 && n <= hi && (!whole || Number.isInteger(n)));
+  let out = pick(target / 4);
+  if (out.length < 3) out = pick(target / 2);
+  if (out.length === 0) out = [whole ? 1 : Number((target / 10).toPrecision(2))];
+  return out.slice(-5);
+}

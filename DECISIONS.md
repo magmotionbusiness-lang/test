@@ -136,3 +136,8 @@ Judgment calls made while building, newest at the bottom of each phase.
 ## Home greeting
 - Home shows "Welcome back, Máté!" above the large "Today" title (Page `eyebrow` prop, Title 3 weight so it reads as a greeting without competing with the title).
 - The name is a setting (Settings → You → Your name). It defaults to Máté; clearing it shows just "Welcome back!".
+
+## Goal progress: any amount
+- The fixed ±step buttons (e.g. ±50 on a 5,000 target) are replaced by Remove / Add / Set buttons that open an "Update progress" sheet.
+- The sheet has Add · Remove · Set total, a big number field (decimals allowed), one-tap amounts sized to the target (`quickAmounts`: nice 1-2-5 numbers between ~1% and 25% of it), and a live "85 → 90 of 100" preview with a bar.
+- Saving shows a toast with Undo. Progress never goes below zero (`applyProgress`).
