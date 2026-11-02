@@ -20,7 +20,14 @@
     <!-- Apply the saved theme before first paint to avoid a flash. -->
     <script>
       // The intro already played this session (e.g. the app reloaded for an update): never paint its static frame.
-      try { if (sessionStorage.getItem('hh-intro-shown')) document.documentElement.classList.add('intro-seen'); } catch (e) {}
+      // Intro will play: colour iOS's status bar strip like the intro from the very first frame.
+      try {
+        if (sessionStorage.getItem('hh-intro-shown')) document.documentElement.classList.add('intro-seen');
+        else {
+          document.documentElement.classList.add('intro-on');
+          document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute('content', '#3F4BDB'); });
+        }
+      } catch (e) {}
     </script>
     <style>
       .intro-seen #intro-static { display: none !important; }

@@ -1,5 +1,6 @@
 import { AnimatePresence, motion, useReducedMotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { refreshThemeColor } from '@/app/theme';
 import createdBy from '@/assets/created-by.png?inline';
 
 /** Matches scripts/icon.mjs (MATTE and the logo geometry), so the iOS launch screen hands over seamlessly. */
@@ -33,7 +34,18 @@ export function Intro() {
     } catch {
       /* fine: it just plays again next time */
     }
-    const t = setTimeout(() => setShow(false), reduced ? 350 : 1250);
+    document.documentElement.classList.add('intro-on');
+    refreshThemeColor();
+    const t = setTimeout(
+      () => {
+        // Hand the status bar back to the app colour as the fade *starts*, so iOS's
+        // late update finishes before the intro is gone (no blue strip left behind).
+        document.documentElement.classList.remove('intro-on');
+        refreshThemeColor();
+        setShow(false);
+      },
+      reduced ? 350 : 1250,
+    );
     return () => clearTimeout(t);
   }, [show, reduced]);
 

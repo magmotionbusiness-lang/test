@@ -9,12 +9,28 @@ function resolve(pref: ThemePref): 'light' | 'dark' {
   return pref;
 }
 
+let lastPref: ThemePref = 'system';
+
+/** Brand blue of the opening intro (same as Intro.tsx / scripts/icon.mjs). */
+const INTRO_COLOR = '#3F4BDB';
+
+/**
+ * iOS colours the status bar strip of a Home Screen app from `theme-color`,
+ * and updates it a beat late. It's blue while the intro plays (class
+ * `intro-on` on <html>) and the page background otherwise.
+ */
+export function refreshThemeColor(): void {
+  const mode = resolve(lastPref);
+  const color = document.documentElement.classList.contains('intro-on') ? INTRO_COLOR : mode === 'dark' ? '#000000' : '#F2F2F7';
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', color));
+}
+
 /** Applies the theme to <html> and the iOS status bar / theme-color metas. */
 export function applyTheme(pref: ThemePref): void {
+  lastPref = pref;
   const mode = resolve(pref);
   document.documentElement.dataset.theme = mode;
-  const color = mode === 'dark' ? '#000000' : '#F2F2F7';
-  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', color));
+  refreshThemeColor();
   try {
     localStorage.setItem('hh-theme', pref);
   } catch {
