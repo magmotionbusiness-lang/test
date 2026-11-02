@@ -132,3 +132,7 @@ Judgment calls made while building, newest at the bottom of each phase.
 - **AI errors say what's wrong**: the function translates Gemini's error into a plain instruction (invalid key, billing/region, key restrictions, quota, unknown model) and otherwise includes Google's own short message, with any key redacted.
 - **Watermark**: "created by magmotion>" (the user's logo, white on transparent) sits under the Habit Hub logo on the iOS launch screens, the loading frame and the intro, at identical proportions (width 1.15× the logo, 0.6× the logo below it, 90% opacity), so it stays put through the opening sequence and fades with the intro. It's inlined (base64) so it never loads late.
 - **Status bar colour follows the intro**: iOS paints a Home Screen app's status bar strip from `theme-color` and updates it a beat late, which left a blue strip at the top after the intro. The strip is now blue from the very first frame (set in `<head>`) and handed back to the background colour as the intro's fade *starts*, so iOS's lag is hidden inside the fade.
+
+## Home greeting
+- Home shows "Welcome back, Máté!" above the large "Today" title (Page `eyebrow` prop, Title 3 weight so it reads as a greeting without competing with the title).
+- The name is a setting (Settings → You → Your name). It defaults to Máté; clearing it shows just "Welcome back!".

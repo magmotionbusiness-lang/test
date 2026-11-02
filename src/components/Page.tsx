@@ -10,6 +10,8 @@ interface PageProps {
   actions?: ReactNode;
   /** Content under the large title (e.g. a date or subtitle). */
   subtitle?: ReactNode;
+  /** A short line above the large title, e.g. a greeting. */
+  eyebrow?: ReactNode;
   /** Right side of the large title row (e.g. a progress ring). */
   titleAccessory?: ReactNode;
   children: ReactNode;
@@ -20,7 +22,7 @@ interface PageProps {
  * nav bar as you scroll. Each page owns its scroll container so tabs keep
  * their own position.
  */
-export function Page({ title, backLabel, actions, subtitle, titleAccessory, children }: PageProps) {
+export function Page({ title, backLabel, actions, subtitle, eyebrow, titleAccessory, children }: PageProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [collapsed, setCollapsed] = useState(false);
@@ -73,6 +75,7 @@ export function Page({ title, backLabel, actions, subtitle, titleAccessory, chil
       <div className="mx-auto max-w-content px-safe">
         <div className="flex items-end justify-between gap-3 pb-2 pt-1">
           <div className="min-w-0">
+            {eyebrow && <div className="mb-0.5 truncate text-title3">{eyebrow}</div>}
             <h1 className="truncate text-large-title">{title}</h1>
             {subtitle && <div className="text-subhead text-secondary">{subtitle}</div>}
           </div>

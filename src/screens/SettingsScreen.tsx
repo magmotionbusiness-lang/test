@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { aiUsage } from '@/ai/client';
 import { useSettings } from '@/app/useSettings';
+import { DEFAULT_NAME } from '@/screens/HomeScreen';
 import { badgeSupported } from '@/app/useAppBadge';
 import { clearCustomSound, playCompletionSound, setCustomSound } from '@/lib/sound';
 import { db } from '@/db/db';
@@ -29,6 +30,8 @@ export function SettingsScreen() {
   const [busy, setBusy] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const soundRef = useRef<HTMLInputElement>(null);
+  const [nameDraft, setNameDraft] = useState(settings.userName ?? DEFAULT_NAME);
+  useEffect(() => setNameDraft(settings.userName ?? DEFAULT_NAME), [settings.userName]);
   const usage = useLiveQuery(() => aiUsage(), [settings.aiCallsToday, settings.aiCallsDate, settings.aiDailyLimit]);
 
   useEffect(() => {
@@ -138,6 +141,22 @@ export function SettingsScreen() {
 
   return (
     <Page title="Settings">
+      <ListGroup header="You" footer="Shown in the greeting at the top of Home. Leave it empty for just “Welcome back!”.">
+        <label className="flex min-h-[44px] items-center gap-3 px-4">
+          <span className="flex-1 text-body">Your name</span>
+          <input
+            value={nameDraft}
+            onChange={(e) => setNameDraft(e.target.value)}
+            onBlur={() => updateSettings({ userName: nameDraft.trim() })}
+            onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+            maxLength={30}
+            placeholder="Name"
+            autoComplete="given-name"
+            className="w-40 bg-transparent text-right text-body text-secondary outline-none"
+          />
+        </label>
+      </ListGroup>
+
       <ListGroup header="Appearance">
         <div className="px-4 py-3">
           <div className="mb-2 flex items-center gap-3">

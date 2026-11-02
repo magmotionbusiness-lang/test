@@ -109,6 +109,7 @@ export function HomeScreen() {
 
   return (
     <Page
+      eyebrow={greeting(settings.userName)}
       title={isToday ? 'Today' : formatDay(date, 'EEEE')}
       subtitle={isToday ? formatDay(date, 'EEEE, d MMMM') : formatDay(date, 'd MMMM yyyy')}
       actions={
@@ -260,4 +261,12 @@ export function HomeScreen() {
       <HabitForm open={formOpen} onClose={() => setFormOpen(false)} habit={editing} />
     </Page>
   );
+}
+
+/** The app owner's name until another is set in Settings. */
+export const DEFAULT_NAME = 'Máté';
+
+function greeting(name: string | undefined): string {
+  const n = (name ?? DEFAULT_NAME).trim();
+  return n ? `Welcome back, ${n}!` : 'Welcome back!';
 }

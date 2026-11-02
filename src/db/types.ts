@@ -133,6 +133,8 @@ export interface Settings {
   installGuideSeen: boolean;
   /** Show today's remaining habit count on the Home Screen icon. */
   appBadge?: boolean;
+  /** Name used in the Home greeting; unset means the default name, '' means no name. */
+  userName?: string;
   /** 'full' (default) always animates; 'system' follows iOS Reduce Motion. */
   motion?: 'full' | 'system';
   /** When the user's own sound plays: when everything is done (default) or on every completed habit. */
