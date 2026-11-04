@@ -15,9 +15,9 @@ let lastPref: ThemePref = 'system';
 const INTRO_COLOR = '#3F4BDB';
 
 /**
- * iOS colours the status bar strip of a Home Screen app from `theme-color`,
- * and updates it a beat late. It's blue while the intro plays (class
- * `intro-on` on <html>) and the page background otherwise.
+ * Safari's own bar colour follows `theme-color`: blue while the intro plays
+ * (class `intro-on` on <html>), the page background otherwise. The Home
+ * Screen app ignores it: it draws under the status bar itself (black-translucent).
  */
 export function refreshThemeColor(): void {
   const mode = resolve(lastPref);

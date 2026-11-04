@@ -157,3 +157,21 @@
     animation: none;
   }
 }
+
+/*
+ * The Home Screen app draws under the iOS status bar (black-translucent), so the
+ * strip behind the clock is just the page: it fades with the intro, frame for
+ * frame, instead of iOS repainting it a beat late. iOS keeps the clock white in
+ * this mode, so in light mode a soft shade behind it keeps it readable.
+ */
+@media (display-mode: standalone) {
+  html[data-theme='light']:not(.intro-on) body::before {
+    content: '';
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: env(safe-area-inset-top);
+    background: linear-gradient(rgb(0 0 0 / 0.38), rgb(0 0 0 / 0.12));
+    z-index: 60;
+    pointer-events: none;
+  }
+}

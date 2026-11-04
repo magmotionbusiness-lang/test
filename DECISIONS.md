@@ -151,3 +151,9 @@ Judgment calls made while building, newest at the bottom of each phase.
 - iOS showed a plain letter "H" on the Home Screen: it draws one when it can't download the apple-touch-icon at the moment the app is added.
 - The build now embeds the 180 px icon in index.html as a data URI (a tiny Vite plugin, `inlineTouchIcon`), so iOS never needs a separate download. Copies also sit at `/apple-touch-icon.png` and `/apple-touch-icon-precomposed.png`, the root paths iOS tries as a fallback.
 - iOS never refreshes the icon of an app that's already on the Home Screen, so a new icon only shows after re-adding it. Removing the app deletes its data, so export a backup first. The backup doesn't include a custom sound, which has to be picked again.
+
+## Status bar: black-translucent
+- With `apple-mobile-web-app-status-bar-style: default`, iOS paints the strip behind the clock itself from `theme-color` and updates it late, so a blue band lingered after the intro whatever the timing.
+- It's now `black-translucent`: the app draws under the status bar (headers and onboarding already pad by `env(safe-area-inset-top)`), so the strip is just the page and fades with the intro exactly. Sheets opened with the keyboard up stop below the clock.
+- iOS keeps the clock white in this mode. In light mode (Home Screen app only) a soft shade sits behind it so it stays readable.
+- iOS reads this setting when the app is added to the Home Screen, so it takes effect after re-adding.

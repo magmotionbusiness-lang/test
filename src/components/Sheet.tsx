@@ -49,7 +49,7 @@ export function Sheet({ open, onClose, title, action, children }: SheetProps) {
             onClick={onClose}
           />
           <motion.div
-            className={`absolute inset-x-0 bottom-0 mx-auto flex max-w-content flex-col rounded-t-[14px] bg-bg ${keyboardOpen ? 'max-h-full' : 'max-h-[92%] pb-safe'}`}
+            className={`absolute inset-x-0 bottom-0 mx-auto flex max-w-content flex-col rounded-t-[14px] bg-bg ${keyboardOpen ? 'max-h-[calc(100%_-_env(safe-area-inset-top))]' : 'max-h-[92%] pb-safe'}`}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
