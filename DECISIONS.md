@@ -146,3 +146,8 @@ Judgment calls made while building, newest at the bottom of each phase.
 - The "created by magmotion>" watermark is no longer baked into the iOS launch pictures or the static first frame in index.html, so it no longer just appears. After the logo pops, the intro brings it in: it rises 10px, unblurs, fades to 90% and is revealed left to right behind a soft, feathered mask edge (0.45 s delay, 0.85 s). With reduced motion it simply fades.
 - The intro now holds for 1.65 s (was 1.25 s), so the watermark is fully in before everything fades.
 - The launch pictures have new `-v2` file names, so iOS fetches the new ones instead of reusing its cached copies.
+
+## Home Screen icon embedded in the page
+- iOS showed a plain letter "H" on the Home Screen: it draws one when it can't download the apple-touch-icon at the moment the app is added.
+- The build now embeds the 180 px icon in index.html as a data URI (a tiny Vite plugin, `inlineTouchIcon`), so iOS never needs a separate download. Copies also sit at `/apple-touch-icon.png` and `/apple-touch-icon-precomposed.png`, the root paths iOS tries as a fallback.
+- iOS never refreshes the icon of an app that's already on the Home Screen, so a new icon only shows after re-adding it. Removing the app deletes its data, so export a backup first. The backup doesn't include a custom sound, which has to be picked again.

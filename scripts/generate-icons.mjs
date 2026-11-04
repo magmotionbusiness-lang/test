@@ -47,6 +47,9 @@ async function render(svgOrHtml, w, h, out) {
 
 writeFileSync(new URL('favicon.svg', root), iconSvg({ size: 64, rounded: true }));
 await render(iconSvg({ size: 180 }), 180, 180, 'icons/apple-touch-icon-180.png');
+// iOS also looks for these at the site root when a page gives it no usable icon.
+await render(iconSvg({ size: 180 }), 180, 180, 'apple-touch-icon.png');
+await render(iconSvg({ size: 180 }), 180, 180, 'apple-touch-icon-precomposed.png');
 await render(iconSvg({ size: 167 }), 167, 167, 'icons/apple-touch-icon-167.png');
 await render(iconSvg({ size: 152 }), 152, 152, 'icons/apple-touch-icon-152.png');
 await render(iconSvg({ size: 192 }), 192, 192, 'icons/icon-192.png');

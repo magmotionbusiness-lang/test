@@ -1,11 +1,24 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
 import pkg from './package.json' with { type: 'json' };
 
 // `vite build --mode artifact` makes a single-page preview (no service worker,
 // one inlined bundle) for viewing on claude.ai; see scripts/inline-preview.mjs.
+/**
+ * Embeds the Home Screen icon in index.html, so iOS has it the moment you tap
+ * "Add to Home Screen" and never falls back to a letter "H" when fetching it fails.
+ */
+const inlineTouchIcon = {
+  name: 'inline-touch-icon',
+  transformIndexHtml(html: string) {
+    const png = readFileSync(new URL('./public/icons/apple-touch-icon-180.png', import.meta.url)).toString('base64');
+    return html.replace(/<link rel="apple-touch-icon"[^>]*>(\s*<link rel="apple-touch-icon"[^>]*>)*/, `<link rel="apple-touch-icon" href="data:image/png;base64,${png}" />`);
+  },
+};
+
 export default defineConfig(({ mode }) => ({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
@@ -25,6 +38,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
+    inlineTouchIcon,
     mode !== 'artifact' &&
       VitePWA({
         registerType: 'autoUpdate',
