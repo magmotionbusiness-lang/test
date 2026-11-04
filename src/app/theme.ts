@@ -17,11 +17,20 @@ const INTRO_COLOR = '#3F4BDB';
 /**
  * Safari's own bar colour follows `theme-color`: blue while the intro plays
  * (class `intro-on` on <html>), the page background otherwise. The Home
- * Screen app ignores it: it draws under the status bar itself (black-translucent).
+ * Screen app always gets the page background: iOS repaints its status bar
+ * strip from theme-color a beat late, which left blue behind after the
+ * intro. It draws under the status bar itself instead (black-translucent).
  */
+function isStandalone(): boolean {
+  return (
+    (navigator as Navigator & { standalone?: boolean }).standalone === true || window.matchMedia?.('(display-mode: standalone)').matches === true
+  );
+}
+
 export function refreshThemeColor(): void {
   const mode = resolve(lastPref);
-  const color = document.documentElement.classList.contains('intro-on') ? INTRO_COLOR : mode === 'dark' ? '#000000' : '#F2F2F7';
+  const intro = document.documentElement.classList.contains('intro-on') && !isStandalone();
+  const color = intro ? INTRO_COLOR : mode === 'dark' ? '#000000' : '#F2F2F7';
   document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', color));
 }
 

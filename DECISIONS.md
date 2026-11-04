@@ -157,3 +157,4 @@ Judgment calls made while building, newest at the bottom of each phase.
 - It's now `black-translucent`: the app draws under the status bar (headers and onboarding already pad by `env(safe-area-inset-top)`), so the strip is just the page and fades with the intro exactly. Sheets opened with the keyboard up stop below the clock.
 - iOS keeps the clock white in this mode. In light mode (Home Screen app only) a soft shade sits behind it so it stays readable.
 - iOS reads this setting when the app is added to the Home Screen, so it takes effect after re-adding.
+- Follow-up: the Home Screen app no longer sets `theme-color` to the intro blue at all (only Safari does). iOS repaints the strip behind the clock from `theme-color` late, so with no blue to switch away from, nothing blue can linger after the intro, whichever status bar style the installed app has.
