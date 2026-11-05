@@ -145,8 +145,31 @@ export interface Settings {
   completionSound?: boolean;
   /** Display name of the user's own completion sound, if they chose one. */
   completionSoundName?: string | null;
+  /** The vision board's starter sections were created once (so deleting them all keeps them deleted). */
+  visionSeeded?: boolean;
   lastBackupAt: ISODateTime | null;
   updatedAt: ISODateTime;
+}
+
+/** One tile of the vision board: a dream, its photo and the words that keep it alive. */
+export interface VisionSection extends BaseRecord {
+  title: string;
+  emoji: string;
+  color: HabitColor;
+  description: string;
+  /** Id of the photo in `blobs`, or null. */
+  photoId: string | null;
+  /** The photo's width ÷ height, used to place it in the frame. */
+  photoAspect: number | null;
+  /** Which part of the photo shows in the 4:5 frame, 0–100 on each axis. */
+  focusX: number;
+  focusY: number;
+  /** "Progression" dots, 0–4. */
+  progress: number;
+  goalId: UUID | null;
+  order: number;
+  /** The latest AI breakdown of what moves this forward. */
+  breakdown?: unknown;
 }
 
 export interface StoredBlob {

@@ -11,6 +11,7 @@ It's a Progressive Web App: open the link in Safari and add it to your Home Scre
 - **Tile calendar** — a GitHub-style year grid and a month view for every habit; tap a past day to log it, hold it for notes, workouts and streak freezes.
 - **Sections** — per-section grids, consistency over time, best and worst weekdays, longest streaks, and gym extras (weekly volume, personal records, workout history).
 - **Goals** — the AI Goal Planner asks a few questions and proposes up to 3 new habits (reusing ones you already have); goal pages show milestones, linked habits and an "Am I on track?" check-in.
+- **Vision board** — a wall of polaroids, one per area of life (Wealth, Passion, Health, Love, Family, Career, or your own), each with a photo, your own words and four progression dots. Photos of any shape sit in uniform 4:5 frames; drag to choose what shows. Opening a tile lifts the polaroid off the board while the photo develops; from there, turn it into a goal or let the AI break it into concrete actions, a first step and milestones.
 - **Insights** — AI reviews of today, this week, this month or a custom range, optionally for one section, cached so the same review never costs twice.
 - **Fair streaks** — planned skips never break a streak, and 2 streak freezes a month cover unplanned misses.
 - **Private by default** — only summaries go to the AI, notes only if you opt in, and Settings shows exactly what gets sent. Export and import JSON backups.

@@ -55,6 +55,13 @@ const CHECKIN_SHAPE = `{
   }
 }`;
 
+const VISION_SHAPE = `{
+  "headline": string (one sentence, max 20 words, that names what will really move this forward),
+  "firstStep": { "action": string (something doable today in under 15 minutes), "why": string },
+  "actions": [{ "action": string (imperative, specific, measurable), "why": string, "cadence": "once" | "daily" | "weekly" | "monthly" }] (3-5 items, highest leverage first),
+  "milestones": [string] (2-4 measurable checkpoints, in order)
+}`;
+
 export function buildPrompt(req: AIRequest): string {
   switch (req.task) {
     case 'review':
@@ -97,6 +104,21 @@ Existing habits: ${JSON.stringify(req.payload.existingHabits)}
 
 Return JSON with this shape:
 ${PLAN_SHAPE}`;
+
+    case 'visionSteps':
+      return `This is one tile of the user's vision board: a life area and, in their own words, what they want it to become.
+Break it down into the specific actions that would actually move the needle. Be concrete (numbers, frequencies, names of things to do), not generic advice. Favour a few high-leverage actions over many small ones, and make the first step tiny and doable today.
+If the vision is vague or empty, infer a sensible, modest ambition for the area and say so in the headline.
+Progress dots are 0-4 (0 = not started, 4 = there).
+
+Area: ${JSON.stringify(req.payload.area)}
+Their vision: ${JSON.stringify(req.payload.vision || 'not written yet')}
+Progress: ${req.payload.progress}/4
+Linked goal: ${JSON.stringify(req.payload.linkedGoal ?? 'none')}
+Today: ${req.payload.today}
+
+Return JSON with this shape:
+${VISION_SHAPE}`;
 
     case 'goalCheckin':
       return `Is the user on track for this goal? Judge from the goal's progress and deadline and from how consistently the linked habits were done recently. Then suggest exactly ONE adjustment (e.g. lower a target, add a minimum version, change a schedule) — or "keep-going" if nothing should change.

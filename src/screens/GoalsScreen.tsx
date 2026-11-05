@@ -7,6 +7,7 @@ import { db } from '@/db/db';
 import type { Goal, Habit } from '@/db/types';
 import { GoalForm } from '@/components/GoalForm';
 import { GoalPlanner } from '@/components/GoalPlanner';
+import { VisionEntryCard } from '@/components/vision/VisionEntryCard';
 import { NavButton, Page } from '@/components/Page';
 import { Card, EmptyState, ListGroup, ListRow, PrimaryButton } from '@/components/ui';
 import { formatDay, shiftDate, today as todayFn } from '@/domain/dates';
@@ -48,6 +49,8 @@ export function GoalsScreen() {
         </NavButton>
       }
     >
+      <VisionEntryCard />
+
       {data && data.goals.length === 0 && (
         <EmptyState
           title="No goals yet"

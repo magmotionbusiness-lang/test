@@ -15,7 +15,10 @@ const inlineTouchIcon = {
   name: 'inline-touch-icon',
   transformIndexHtml(html: string) {
     const png = readFileSync(new URL('./public/icons/apple-touch-icon-180.png', import.meta.url)).toString('base64');
-    return html.replace(/<link rel="apple-touch-icon"[^>]*>(\s*<link rel="apple-touch-icon"[^>]*>)*/, `<link rel="apple-touch-icon" href="data:image/png;base64,${png}" />`);
+    return html.replace(
+      /<link rel="apple-touch-icon"[^>]*>(\s*<link rel="apple-touch-icon"[^>]*>)*/,
+      `<link rel="apple-touch-icon" href="data:image/png;base64,${png}" />`,
+    );
   },
 };
 

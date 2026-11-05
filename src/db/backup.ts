@@ -2,9 +2,11 @@ import { z } from 'zod';
 import { db } from './db';
 import { DEFAULT_SETTINGS, updateSettings } from './repo';
 import { nowIso } from '@/lib/id';
+import { blobToDataUrl, dataUrlToBlob } from '@/lib/image';
 
 const FORMAT = 'habit-hub-backup';
-const VERSION = 1;
+/** v2 adds the vision board and its photos. Older backups still import. */
+const VERSION = 2;
 
 const rows = z.array(z.record(z.unknown()).and(z.object({ id: z.string() })));
 
@@ -20,11 +22,14 @@ const backupSchema = z.object({
     goals: rows,
     aiReviews: rows.optional(),
     settings: rows.optional(),
+    vision: rows.optional(),
+    /** Vision board photos as data URLs, keyed by their blob id. */
+    visionPhotos: z.array(z.object({ id: z.string(), dataUrl: z.string() })).optional(),
   }),
 });
 
 export async function exportBackup(): Promise<Blob> {
-  const [sections, habits, entries, dailyNotes, goals, aiReviews, settings] = await Promise.all([
+  const [sections, habits, entries, dailyNotes, goals, aiReviews, settings, vision] = await Promise.all([
     db.sections.toArray(),
     db.habits.toArray(),
     db.entries.toArray(),
@@ -32,12 +37,21 @@ export async function exportBackup(): Promise<Blob> {
     db.goals.toArray(),
     db.aiReviews.toArray(),
     db.settings.toArray(),
+    db.vision.toArray(),
   ]);
+  const visionPhotos = await Promise.all(
+    vision
+      .filter((v) => v.photoId)
+      .map(async (v) => {
+        const row = await db.blobs.get(v.photoId!);
+        return row ? { id: row.id, dataUrl: await blobToDataUrl(row.blob) } : null;
+      }),
+  );
   const body = {
     format: FORMAT,
     version: VERSION,
     exportedAt: nowIso(),
-    data: { sections, habits, entries, dailyNotes, goals, aiReviews, settings },
+    data: { sections, habits, entries, dailyNotes, goals, aiReviews, settings, vision, visionPhotos: visionPhotos.filter(Boolean) },
   };
   await updateSettings({ lastBackupAt: nowIso() });
   return new Blob([JSON.stringify(body)], { type: 'application/json' });
@@ -69,9 +83,16 @@ export function parseBackup(text: string): z.infer<typeof backupSchema> {
 /** Replaces everything on the device with the backup's contents. */
 export async function importBackup(backup: z.infer<typeof backupSchema>): Promise<ImportSummary> {
   const d = backup.data;
+  // Decode photos before the transaction: IndexedDB transactions can't wait on other async work.
+  const photos = await Promise.all(
+    (d.visionPhotos ?? []).map(async (p) => ({ id: p.id, blob: await dataUrlToBlob(p.dataUrl), updatedAt: nowIso() })),
+  );
   await db.transaction('rw', db.tables, async () => {
-    // Keep the user's own files (e.g. their completion sound); backups don't carry them.
+    // Keep the user's own files (e.g. their completion sound); backups carry only the vision board photos.
     await Promise.all(db.tables.filter((t) => t.name !== 'blobs').map((t) => t.clear()));
+    await db.blobs.where('id').startsWith('vision-photo:').delete();
+    if (photos.length) await db.blobs.bulkPut(photos);
+    if (d.vision) await db.vision.bulkPut(d.vision as never[]);
     await db.sections.bulkPut(d.sections as never[]);
     await db.habits.bulkPut(d.habits as never[]);
     await db.entries.bulkPut(d.entries as never[]);
@@ -79,7 +100,15 @@ export async function importBackup(backup: z.infer<typeof backupSchema>): Promis
     await db.goals.bulkPut(d.goals as never[]);
     if (d.aiReviews) await db.aiReviews.bulkPut(d.aiReviews as never[]);
     const s = d.settings?.find((x) => x.id === 'settings');
-    await db.settings.put({ ...DEFAULT_SETTINGS, ...(s as object), id: 'settings', onboardingDone: true, updatedAt: nowIso() });
+    await db.settings.put({
+      ...DEFAULT_SETTINGS,
+      ...(s as object),
+      id: 'settings',
+      onboardingDone: true,
+      // A backup without a board shouldn't stop the starter tiles from appearing.
+      visionSeeded: Boolean(d.vision?.length),
+      updatedAt: nowIso(),
+    });
   });
   return { sections: d.sections.length, habits: d.habits.length, entries: d.entries.length };
 }

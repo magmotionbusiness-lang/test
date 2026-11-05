@@ -25,6 +25,7 @@ const HabitScreen = named(() => import('@/screens/HabitScreen'), 'HabitScreen');
 const GoalsScreen = named(() => import('@/screens/GoalsScreen'), 'GoalsScreen');
 const GoalScreen = named(() => import('@/screens/GoalScreen'), 'GoalScreen');
 const InsightsScreen = named(() => import('@/screens/InsightsScreen'), 'InsightsScreen');
+const VisionBoardScreen = named(() => import('@/screens/VisionBoardScreen'), 'VisionBoardScreen');
 const SettingsScreen = named(() => import('@/screens/SettingsScreen'), 'SettingsScreen');
 const Onboarding = lazy(() => import('@/screens/Onboarding').then((m) => ({ default: m.Onboarding })));
 
@@ -35,6 +36,7 @@ const ROUTES = [
   { path: '/habits/:id', element: <HabitScreen /> },
   { path: '/goals', element: <GoalsScreen /> },
   { path: '/goals/:id', element: <GoalScreen /> },
+  { path: '/vision', element: <VisionBoardScreen /> },
   { path: '/insights', element: <InsightsScreen /> },
   { path: '/settings', element: <SettingsScreen /> },
   { path: '*', element: <HomeScreen /> },
@@ -85,6 +87,7 @@ export function App() {
       void import('@/screens/GoalsScreen');
       void import('@/screens/GoalScreen');
       void import('@/screens/InsightsScreen');
+      void import('@/screens/VisionBoardScreen');
       void import('@/screens/SettingsScreen');
     }, 1500);
     return () => clearTimeout(t);

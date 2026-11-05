@@ -90,6 +90,19 @@ export const goalCheckinResult = z.object({
 });
 export type GoalCheckinResult = z.infer<typeof goalCheckinResult>;
 
+const step = z.object({ action: z.string().min(1).max(160), why: z.string().min(1).max(260) });
+
+export const visionStepsResult = z.object({
+  headline: z.string().min(1).max(140),
+  firstStep: step,
+  actions: z
+    .array(step.extend({ cadence: z.enum(['once', 'daily', 'weekly', 'monthly']) }))
+    .min(2)
+    .max(6),
+  milestones: z.array(z.string().min(1).max(100)).min(1).max(5),
+});
+export type VisionStepsResult = z.infer<typeof visionStepsResult>;
+
 // ---- Requests ---------------------------------------------------------------
 
 const json = z.record(z.unknown());
@@ -118,6 +131,16 @@ export const aiRequest = z.discriminatedUnion('task', [
     }),
   }),
   z.object({ task: z.literal('goalCheckin'), payload: json }),
+  z.object({
+    task: z.literal('visionSteps'),
+    payload: z.object({
+      area: z.string().min(1).max(60),
+      vision: z.string().max(1000),
+      progress: z.number().int().min(0).max(4),
+      linkedGoal: z.string().max(200).nullable(),
+      today: z.string().max(10),
+    }),
+  }),
 ]);
 export type AIRequest = z.infer<typeof aiRequest>;
 export type AITask = AIRequest['task'];
@@ -127,6 +150,7 @@ export const resultSchemas = {
   goalQuestions: goalQuestionsResult,
   goalPlan: goalPlanResult,
   goalCheckin: goalCheckinResult,
+  visionSteps: visionStepsResult,
 } as const;
 
 export type AIResult<T extends AITask> = z.infer<(typeof resultSchemas)[T]>;

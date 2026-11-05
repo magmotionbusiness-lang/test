@@ -14,11 +14,13 @@ interface Props {
   open: boolean;
   onClose: () => void;
   goal?: Goal;
+  /** Pre-fills a new goal, e.g. from a vision board tile. */
+  initial?: { title?: string; why?: string; milestones?: string[] };
   onCreated?: (id: string) => void;
 }
 
 /** Manual goal creation and editing (the AI planner is the default path). */
-export function GoalForm({ open, onClose, goal, onCreated }: Props) {
+export function GoalForm({ open, onClose, goal, initial, onCreated }: Props) {
   const habits = useLiveQuery(() => db.habits.filter((h) => !h.archived).sortBy('name'), []) ?? [];
   const [title, setTitle] = useState('');
   const [why, setWhy] = useState('');
@@ -32,15 +34,16 @@ export function GoalForm({ open, onClose, goal, onCreated }: Props) {
 
   useEffect(() => {
     if (!open) return;
-    setTitle(goal?.title ?? '');
-    setWhy(goal?.why ?? '');
+    setTitle(goal?.title ?? initial?.title ?? '');
+    setWhy(goal?.why ?? initial?.why?.slice(0, 200) ?? '');
     setDeadline(goal?.deadline ?? '');
     setMetric(goal?.metric ?? '');
     setTarget(goal?.targetValue != null ? String(goal.targetValue) : '');
     setCurrent(goal?.currentValue != null ? String(goal.currentValue) : '');
-    setMilestones(goal?.milestones ?? []);
+    setMilestones(goal?.milestones ?? (initial?.milestones ?? []).map((title) => ({ id: uuid(), title, done: false })));
     setLinked(goal?.habitIds ?? []);
     setNewMilestone('');
+    // `initial` is read only when the sheet opens.
   }, [open, goal]);
 
   const num = (s: string) => (s.trim() === '' || !Number.isFinite(Number(s.replace(',', '.'))) ? null : Number(s.replace(',', '.')));

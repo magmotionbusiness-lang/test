@@ -1,5 +1,6 @@
 import { db } from './db';
-import type { DailyNote, Entry, Goal, Habit, LocalDate, Section, Settings } from './types';
+import type { DailyNote, Entry, Goal, Habit, LocalDate, Section, Settings, VisionSection } from './types';
+import { STARTER_SECTIONS } from '@/domain/vision';
 import { nowIso, uuid } from '@/lib/id';
 
 /**
@@ -162,5 +163,81 @@ export async function setHabitGoalLink(habitId: string, goalId: string, linked: 
     const toggle = (ids: string[], id: string) => (linked ? [...new Set([...ids, id])] : ids.filter((x) => x !== id));
     await db.habits.update(habitId, { goalIds: toggle(habit.goalIds, goalId), updatedAt: now });
     await db.goals.update(goalId, { habitIds: toggle(goal.habitIds, habitId), updatedAt: now });
+  });
+}
+
+// Vision board ----------------------------------------------------------------
+
+export const visionPhotoId = (sectionId: string) => `vision-photo:${sectionId}`;
+
+/** Creates the starter tiles the first time the board opens. Safe to call repeatedly. */
+export async function ensureVisionBoard(): Promise<void> {
+  await db.transaction('rw', db.vision, db.settings, async () => {
+    const settings = await getSettings();
+    if (settings.visionSeeded) return;
+    if ((await db.vision.count()) === 0) {
+      const now = nowIso();
+      await db.vision.bulkAdd(
+        STARTER_SECTIONS.map((s, i) => ({
+          ...s,
+          id: uuid(),
+          description: '',
+          photoId: null,
+          photoAspect: null,
+          focusX: 50,
+          focusY: 50,
+          progress: 0,
+          goalId: null,
+          order: i,
+          createdAt: now,
+          updatedAt: now,
+        })),
+      );
+    }
+    await db.settings.put({ ...settings, visionSeeded: true, id: 'settings', updatedAt: nowIso() });
+  });
+}
+
+export async function createVisionSection(data: Pick<VisionSection, 'title' | 'emoji' | 'color'>): Promise<VisionSection> {
+  const last = await db.vision.orderBy('order').last();
+  const section = stamp<VisionSection>({
+    ...data,
+    description: '',
+    photoId: null,
+    photoAspect: null,
+    focusX: 50,
+    focusY: 50,
+    progress: 0,
+    goalId: null,
+    order: (last?.order ?? -1) + 1,
+  });
+  await db.vision.add(section);
+  return section;
+}
+
+export async function updateVisionSection(id: string, patch: Partial<VisionSection>): Promise<void> {
+  await db.vision.update(id, { ...patch, updatedAt: nowIso() });
+}
+
+/** Stores a prepared photo for a tile and centres it in the frame. */
+export async function setVisionPhoto(id: string, photo: { blob: Blob; aspect: number }): Promise<void> {
+  const photoId = visionPhotoId(id);
+  await db.transaction('rw', db.blobs, db.vision, async () => {
+    await db.blobs.put({ id: photoId, blob: photo.blob, updatedAt: nowIso() });
+    await db.vision.update(id, { photoId, photoAspect: photo.aspect, focusX: 50, focusY: 50, updatedAt: nowIso() });
+  });
+}
+
+export async function removeVisionPhoto(id: string): Promise<void> {
+  await db.transaction('rw', db.blobs, db.vision, async () => {
+    await db.blobs.delete(visionPhotoId(id));
+    await db.vision.update(id, { photoId: null, photoAspect: null, updatedAt: nowIso() });
+  });
+}
+
+export async function deleteVisionSection(id: string): Promise<void> {
+  await db.transaction('rw', db.blobs, db.vision, async () => {
+    await db.blobs.delete(visionPhotoId(id));
+    await db.vision.delete(id);
   });
 }

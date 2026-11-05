@@ -49,6 +49,15 @@ Follow in order. Each line says where to tap and what you should see.
 32. **Sections → Study → Review this section with AI** → Insights opens filtered to Study.
 33. Turn on **Airplane Mode** → **Insights → Today** shows "You're offline" (cached reviews still open); the rest of the app keeps working. Turn it off.
 
+## 7b. Vision board
+- **Goals** → the glowing **Vision Board** card at the top (polaroids float, a shimmer passes) → tap it → six tilted polaroids on a warm board.
+- Tap **Wealth** → the polaroid lifts off, straightens and glides to the middle; the room dims. Tap the pencil → **Choose a photo** → pick a wide photo → drag it in the frame to choose what shows → write a few words → **Save**.
+- Close (✕, or pull the photo down) → it flies back to exactly its spot. Reopen → the photo develops from a pale haze to full colour.
+- Tap the dots under the photo → progression fills in; the board's "of the way" bar moves.
+- **Break it down** → a headline, a "Start today" step, 3–5 actions with how often, and milestones. **Make it a goal** → the goal form opens with the name, your words and those milestones filled in → **Add** → the button becomes "Goal · 0%".
+- **+** → a new tile; close without changes → it disappears again. Edit → **Delete tile** removes it.
+- **Export backup** → **Erase all data** → **Import backup** → the board comes back with its photos.
+
 ## 8. Settings and data
 34. **Theme → Dark / Light / System**; **First day of the week → Sunday** → grids re-align.
 35. **Accent color** → pick green → buttons and links turn green.

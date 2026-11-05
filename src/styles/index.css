@@ -175,3 +175,98 @@
     pointer-events: none;
   }
 }
+
+/* ---- Vision board -------------------------------------------------------- */
+
+/* Warm paper backdrop with soft light and film grain, like a printed board. */
+.vision-backdrop {
+  background: radial-gradient(60% 45% at 18% 72%, rgb(232 196 172 / 0.55), transparent 70%),
+    radial-gradient(55% 40% at 85% 30%, rgb(226 208 230 / 0.5), transparent 70%), linear-gradient(180deg, #f1ede8, #ece4dc 55%, #efe9e4);
+}
+:root[data-theme='dark'] .vision-backdrop {
+  background: radial-gradient(60% 45% at 15% 75%, rgb(255 138 76 / 0.16), transparent 70%),
+    radial-gradient(55% 45% at 88% 25%, rgb(186 104 255 / 0.16), transparent 70%), linear-gradient(180deg, #0d0b0e, #110d10 55%, #0b0a0c);
+}
+.film-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.45 0 0 0 0 0.4 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.22;
+  mix-blend-mode: multiply;
+}
+:root[data-theme='dark'] .film-grain {
+  opacity: 0.12;
+  mix-blend-mode: screen;
+}
+
+/* Goals tab entry: a slowly drifting aurora (transform only, so it stays on the GPU). */
+.aurora {
+  background: radial-gradient(40% 50% at 20% 30%, #ff5fa2, transparent 70%), radial-gradient(45% 55% at 75% 25%, #7c5cff, transparent 70%),
+    radial-gradient(50% 60% at 60% 85%, #ff9f43, transparent 70%), radial-gradient(40% 50% at 15% 90%, #3fa9f5, transparent 70%), #5b3fd8;
+  animation: aurora-drift 14s ease-in-out infinite alternate;
+}
+@keyframes aurora-drift {
+  0% {
+    transform: translate3d(-6%, -4%, 0) rotate(0deg) scale(1.05);
+  }
+  50% {
+    transform: translate3d(5%, 3%, 0) rotate(8deg) scale(1.15);
+  }
+  100% {
+    transform: translate3d(-3%, 6%, 0) rotate(-6deg) scale(1.08);
+  }
+}
+.shimmer-sweep {
+  background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.28) 50%, transparent 70%);
+  animation: shimmer-sweep 4.8s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+}
+@keyframes shimmer-sweep {
+  0%,
+  55% {
+    transform: translate3d(-120%, 0, 0);
+  }
+  100% {
+    transform: translate3d(120%, 0, 0);
+  }
+}
+.twinkle {
+  animation: twinkle 2.6s ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.7) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1) rotate(45deg);
+  }
+}
+.float-y {
+  animation: float-y 5s ease-in-out infinite;
+}
+@keyframes float-y {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -5px;
+  }
+}
+.orbit-spin {
+  animation: orbit-spin 18s linear infinite;
+}
+@keyframes orbit-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-motion='system'] .aurora,
+  :root[data-motion='system'] .shimmer-sweep,
+  :root[data-motion='system'] .twinkle,
+  :root[data-motion='system'] .float-y,
+  :root[data-motion='system'] .orbit-spin {
+    animation: none;
+  }
+}

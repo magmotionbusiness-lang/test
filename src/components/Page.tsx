@@ -12,6 +12,10 @@ interface PageProps {
   subtitle?: ReactNode;
   /** A short line above the large title, e.g. a greeting. */
   eyebrow?: ReactNode;
+  /** Replaces the large title's text (the compact bar still shows `title`). */
+  heading?: ReactNode;
+  /** A full-screen layer behind the content that doesn't scroll, e.g. a backdrop. */
+  backdrop?: ReactNode;
   /** Right side of the large title row (e.g. a progress ring). */
   titleAccessory?: ReactNode;
   children: ReactNode;
@@ -22,7 +26,7 @@ interface PageProps {
  * nav bar as you scroll. Each page owns its scroll container so tabs keep
  * their own position.
  */
-export function Page({ title, backLabel, actions, subtitle, eyebrow, titleAccessory, children }: PageProps) {
+export function Page({ title, backLabel, actions, subtitle, eyebrow, heading, backdrop, titleAccessory, children }: PageProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [collapsed, setCollapsed] = useState(false);
@@ -42,6 +46,11 @@ export function Page({ title, backLabel, actions, subtitle, eyebrow, titleAccess
 
   return (
     <div ref={scrollRef} className="absolute inset-0 overflow-y-auto overscroll-contain no-scrollbar" data-scroll-root>
+      {backdrop && (
+        <div className="pointer-events-none fixed inset-0" aria-hidden>
+          {backdrop}
+        </div>
+      )}
       <header
         className={`sticky top-0 z-20 pt-safe transition-[background-color,border-color] duration-200 border-b ${
           collapsed ? 'material-bar hairline' : 'border-transparent'
@@ -72,11 +81,11 @@ export function Page({ title, backLabel, actions, subtitle, eyebrow, titleAccess
         </div>
       </header>
 
-      <div className="mx-auto max-w-content px-safe">
+      <div className="relative mx-auto max-w-content px-safe">
         <div className="flex items-end justify-between gap-3 pb-2 pt-1">
           <div className="min-w-0">
             {eyebrow && <div className="mb-0.5 truncate text-title3">{eyebrow}</div>}
-            <h1 className="truncate text-large-title">{title}</h1>
+            <h1 className="truncate text-large-title">{heading ?? title}</h1>
             {subtitle && <div className="text-subhead text-secondary">{subtitle}</div>}
           </div>
           {titleAccessory}
